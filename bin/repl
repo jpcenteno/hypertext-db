@@ -1,0 +1,5 @@
+#! /bin/sh
+set -eu
+
+# Includes test dependencies.
+clj -M:test:repl "$@"

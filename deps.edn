@@ -1,0 +1,13 @@
+{:paths ["src/clj/"]
+ :deps {org.clojure/clojure {:mvn/version "1.11.2"}
+        failjure/failjure {:mvn/version "2.3.0"}
+        failjure-spec/failjure-spec {:mvn/version "2.1.1"} }
+ :aliases {:repl
+           {:extra-deps {nrepl/nrepl {:mvn/version "1.1.0"}}
+            :main-opts ["-m" "nrepl.cmdline" "--interactive" "--color"]}
+
+           :test
+           {:main-opts ["-m" "kaocha.runner"]
+            :extra-paths ["test/clj"]
+            :extra-deps {lambdaisland/kaocha {:mvn/version "1.87.1366"}
+                         orchestra/orchestra {:mvn/version "2021.01.01-1"}}}}}
