@@ -14,20 +14,20 @@
     (testing "When applied to a file with a well formed name"
       (let [file (File. "message-ceiling-tape-hobby.md")
             result (vault-file/file-> file)]
-        (is (= (::vault-file/id result)
-               [:message :ceiling :tape :hobby])))))
+        (is (= [:message :ceiling :tape :hobby]
+               (::vault-file/id result))))))
 
   (testing "Sets ::ext correctly"
 
     (testing "when applied to a file with a simple extension"
       (let [file (File. "message-ceiling-tape-hobby.md")
             result (vault-file/file-> file)]
-        (is (= (::vault-file/ext result) "md"))))
+        (is (= "md" (::vault-file/ext result)))))
 
     (testing "When applied to a file with a composite extension"
       (let [input-file   (File. "iron-clap-syrup-cruise.tar.bz2")
             result       (vault-file/file-> input-file)]
-        (is (= (::vault-file/ext result) "tar.bz2")))))
+        (is (=  "tar.bz2" (::vault-file/ext result))))))
 
   (testing "Sets `::last-modified-ms`"
     (testing "to `0` when the file does not exist"
@@ -43,8 +43,7 @@
                          (.createNewFile)
                          (.setLastModified 42))
               result   (vault-file/file-> file)]
-          (is (= (::vault-file/last-modified-ms result)
-                 42))))))
+          (is (= 42 (::vault-file/last-modified-ms result)))))))
 
   (testing "Ignores any parent directories"
     ;; DESIGN DECISION:
@@ -54,8 +53,8 @@
     (let [file   (File. "/path/to/outside-meat-bubble-jealous.md")
           result (vault-file/file-> file)]
       (is (f/ok? result))
-      (is (= (::vault-file/id result)
-             [:outside :meat :bubble :jealous]))))
+      (is (= [:outside :meat :bubble :jealous]
+             (::vault-file/id result)))))
 
   (testing "Returns a `f/failure?`"
 
