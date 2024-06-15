@@ -17,9 +17,9 @@
   [dir]
   {::dir dir})
 
-(s/fdef get-file-list
+(s/fdef list-vault-files
   :args (s/cat :vault ::t)
   :ret  (s/coll-of ::vault-file/t))
-(defn get-file-list
+(defn list-vault-files
   [vault]
   (set (->> vault ::dir (.listFiles) (map vault-file/file->) (filter f/ok?))))

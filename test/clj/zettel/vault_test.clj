@@ -29,19 +29,19 @@
     (tmp/with-tmp-dir
       (is (s/valid? ::vault/t (vault/dir-> tmp/dir))))))
 
-(deftest get-file-list
+(deftest list-vault-files
 
   (testing "Returns an empty collection when the vault directory is empty"
     (tmp/with-tmp-dir
       (let [vault (vault/dir-> tmp/dir)]
-        (is (empty? (vault/get-file-list vault))))))
+        (is (empty? (vault/list-vault-files vault))))))
 
   (testing "Returns a collection of all the vault-files in the top level directory"
     (tmp/with-tmp-dir
       (let [vault        (vault/dir-> tmp/dir)
             vault-file-1 (create-vault-file tmp/dir "md")
             vault-file-2 (create-vault-file tmp/dir "md")
-            result       (vault/get-file-list vault)]
+            result       (vault/list-vault-files vault)]
         (is (= 2 (count result)))
         (is (contains? result vault-file-1))
         (is (contains? result vault-file-2)))))
@@ -53,7 +53,7 @@
         (let [vault (vault/dir-> tmp/dir)
               _     (doto (File. tmp/dir "firm-popular-carpet-tree")
                       (.mkdir))]
-          (is (empty? (vault/get-file-list vault))))))
+          (is (empty? (vault/list-vault-files vault))))))
 
     (testing "Well named files under directories"
       (tmp/with-tmp-dir
@@ -61,18 +61,18 @@
               subdir (doto (File. tmp/dir "firm-popular-carpet-tree")
                        (.mkdir))]
           (create-vault-file subdir "md")
-          (is (empty? (vault/get-file-list vault))))))
+          (is (empty? (vault/list-vault-files vault))))))
 
     (testing "Hidden, but otherwise well formed filenames"
       (tmp/with-tmp-dir
         (let [vault (vault/dir-> tmp/dir)]
           (doto (File. tmp/dir ".firm-popular-carpet-tree.md")
             (.createNewFile))
-          (is (empty? (vault/get-file-list vault))))))
+          (is (empty? (vault/list-vault-files vault))))))
 
     (testing "Files named after an id, but without extension"
       (tmp/with-tmp-dir
         (let [vault (vault/dir-> tmp/dir)]
           (doto (File. tmp/dir "elbow-turkey-tank-thank")
             (.createNewFile))
-          (is (empty? (vault/get-file-list vault))))))))
+          (is (empty? (vault/list-vault-files vault))))))))
