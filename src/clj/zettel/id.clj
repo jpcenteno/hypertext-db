@@ -49,7 +49,12 @@
 
 (s/fdef ->str
   :args (s/cat :id ::zettel.id)
-  :ret  string?)
+  :ret  string?
+  :fn   (s/and #(f/ok? (:ret %))
+               #(let [input  (-> % :args :id)
+                      result (-> % :ret)
+                      result-as-id (str-> result)]
+                  (= result-as-id input))))
 (defn ->str
   [id]
   (->> id (map name) (str/join "-")))
