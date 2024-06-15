@@ -18,7 +18,7 @@
 
 (s/def ::word (set words))
 
-(s/def ::zettel.id (s/coll-of ::word :into [] :count n))
+(s/def ::t (s/coll-of ::word :into [] :count n))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Public - Constructors                                                  ║
@@ -26,19 +26,19 @@
 
 (s/fdef random
   :args (s/cat)
-  :ret ::zettel.id)
+  :ret ::t)
 (defn random
   []
   (vec (repeatedly n #(rand-nth words))))
 
 (s/fdef str->
   :args (s/cat :s string?)
-  :ret  (s/or :ok ::zettel.id :fail f/failed?))
+  :ret  (s/or :ok ::t :fail f/failed?))
 (defn str->
   [s]
   (let [substrings (str/split s #"-")
         hopefuly-an-id (vec (map keyword substrings))]
-    (if (s/valid? ::zettel.id hopefuly-an-id)
+    (if (s/valid? ::t hopefuly-an-id)
       hopefuly-an-id
       (f/fail (str "Failed to parse id string: " s)))))
 
@@ -55,7 +55,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef ->str
-  :args (s/cat :id ::zettel.id)
+  :args (s/cat :id ::t)
   :ret  id-string?
   :fn   (s/and #(f/ok? (:ret %))
                #(let [input  (-> % :args :id)

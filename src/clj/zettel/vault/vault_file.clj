@@ -25,7 +25,7 @@
   [s]
   (some? (re-matches file-extension-regex s)))
 
-(s/def ::id ::id/zettel.id)
+(s/def ::id ::id/t)
 (s/def ::ext (s/and string? valid-extension?))
 (s/def ::last-modified-ms (s/and #(instance? Long %) #(<= 0 %)))
 
