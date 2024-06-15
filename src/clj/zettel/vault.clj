@@ -1,5 +1,6 @@
 (ns zettel.vault
-  (:require [clojure.spec.alpha :as s])
+  (:require [clojure.spec.alpha :as s]
+            [zettel.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
 (s/def ::dir (s/and #(instance? File %)
@@ -15,9 +16,9 @@
   [dir]
   {::dir dir})
 
-(comment
-  (s/fdef get-file-list
-    :args (s/cat :vault ::t))
-  (defn get-file-list
-    [vault]
-    (.listFiles (::dir vault))))
+(s/fdef get-file-list
+  :args (s/cat :vault ::t)
+  :ret  (s/coll-of ::vault-file/t))
+(defn get-file-list
+  [vault]
+  (set (->> vault ::dir (.listFiles) (map vault-file/file->))))
