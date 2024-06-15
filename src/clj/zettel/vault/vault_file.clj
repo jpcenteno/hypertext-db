@@ -35,18 +35,17 @@
 ; ║ Private helpers                                                        ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-; (s/fdef validate-ext
-;   :args (s/cat :x any?)
-;   ; :ret  (s/or :ok ::ext :error f/failed?)
-;   )
-(defn- validate-ext [x]
-  (f/assert-with #(s/valid? ::ext %) x "Invalid extension"))
+(s/fdef validate-file-extension
+  :args (s/cat :x any?)
+  :ret  (s/or :ok ::ext :error f/failed?))
+(defn- validate-file-extension [x]
+  (f/assert-with #(s/valid? ::ext %) x "Invalid file extension"))
 
-(defn- validate-spec
-  [spec x]
-  (if (s/valid? spec x)
-    x
-    (f/fail (s/explain-str spec x))))
+(s/fdef validate-id-string
+  :args (s/cat :x any?)
+  :ret  (s/or :ok id/id-string? :fail f/failed?))
+(defn- validate-id-string [x]
+  (f/assert-with id/id-string? x "Invalid id string"))
 
 (s/fdef filename-and-extension
   :args (s/cat :file file?)
@@ -57,8 +56,8 @@
   [file]
   (let [without-directory    (.getName file)
         [filename extension] (str/split without-directory #"\." 2)]
-    (f/attempt-all [filename  (validate-spec id/id-string? filename)
-                    extension (validate-spec ::ext         extension)]
+    (f/attempt-all [filename  (validate-id-string      filename)
+                    extension (validate-file-extension extension)]
       [filename extension])))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -67,8 +66,7 @@
 
 (s/fdef file->
   :args (s/cat :file file?)
-  ; :ret  (s/or :ok ::t :error f/failed?)
-  )
+  :ret  (s/or :ok ::t :error f/failed?))
 (defn file->
   "Constructs a `::vault-file/t` given a file. Returns a Failjure `f/failed?`
   value when provided a file with an invalid name.
@@ -88,8 +86,7 @@
   [file]
   (f/attempt-all [v               (filename-and-extension file)
                   [base-name ext] v
-                  id              (id/str-> base-name)
-                  ext             (validate-ext ext)]
+                  id              (id/str-> base-name)]
     {::id               id
      ::ext              ext
      ::last-modified-ms (.lastModified file)}))
