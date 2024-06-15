@@ -1,5 +1,6 @@
 (ns zettel.vault
   (:require [clojure.spec.alpha :as s]
+            [failjure.core :as f]
             [zettel.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
@@ -21,4 +22,4 @@
   :ret  (s/coll-of ::vault-file/t))
 (defn get-file-list
   [vault]
-  (set (->> vault ::dir (.listFiles) (map vault-file/file->))))
+  (set (->> vault ::dir (.listFiles) (map vault-file/file->) (filter f/ok?))))
