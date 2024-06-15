@@ -1,8 +1,7 @@
 (ns zettel.id
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [failjure.core :as f]
-            [failjure.spec :as failjure.spec]))
+            [failjure.core :as f]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Namespace constants                                                    ║
@@ -34,7 +33,7 @@
 
 (s/fdef str->
   :args (s/cat :s string?)
-  :ret  (s/or :ok ::zettel.id :fail ::failjure.spec/failure))
+  :ret  (s/or :ok ::zettel.id :fail f/failed?))
 (defn str->
   [s]
   (let [substrings (str/split s #"-")
