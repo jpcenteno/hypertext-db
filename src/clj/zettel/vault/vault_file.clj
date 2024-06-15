@@ -39,10 +39,10 @@
 ;   :args (s/cat :x any?)
 ;   ; :ret  (s/or :ok ::ext :error f/failed?)
 ;   )
-(defn validate-ext [x]
+(defn- validate-ext [x]
   (f/assert-with #(s/valid? ::ext %) x "Invalid extension"))
 
-(defn validate-spec
+(defn- validate-spec
   [spec x]
   (if (s/valid? spec x)
     x
