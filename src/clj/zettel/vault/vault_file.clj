@@ -18,6 +18,9 @@
 (defn- file? [x]
   (instance? java.io.File x))
 
+(defn- dir? [x]
+  (and (file? x) (.isDirectory x)))
+
 (s/fdef valid-extension?
   :args (s/cat :s string?)
   :ret boolean?)
@@ -90,3 +93,24 @@
     {::id               id
      ::ext              ext
      ::last-modified-ms (.lastModified file)}))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Public: Type conversions                                               ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef ->file
+  :args (s/cat :vault-file ::t :parent-directory dir?)
+  :ret  file?
+  :fn   (s/and
+         #(= (.getParentFile (:ret %)) (-> % :args :parent-directory))
+         ;; This function uses `::id` and `::ext` to generate a filename. Here we check
+         ;; that the generated filename can be used to retrieve those values.
+         #(= (-> % :ret file-> ::id) (-> % :args :vault-file ::id))
+         #(= (-> % :ret file-> ::ext) (-> % :args :vault-file ::ext))))
+(defn ->file
+  "Converts `vault-file` into a Java `java.io.File` instance."
+  [vault-file parent-directory]
+  (let [id-str    (id/->str (::id vault-file))
+        extension (::ext vault-file)
+        file-name (str id-str "." extension)]
+    (File. parent-directory file-name)))
