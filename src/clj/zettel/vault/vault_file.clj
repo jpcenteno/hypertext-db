@@ -97,7 +97,7 @@
 (s/fdef random
   :args (s/cat :extension ::ext)
   :ret  ::t
-  :fn   (s/and #(= (-> % :ret ::ext) (-> :args :extension))
+  :fn   (s/and #(= (-> % :ret ::ext) (-> % :args :extension))
                #(zero? (-> % :ret ::last-modified-ms))))
 (defn random
   "Creates a `::vault-file/t` without creating it in the file system. Uses
