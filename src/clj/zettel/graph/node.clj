@@ -1,7 +1,12 @@
 (ns zettel.graph.node
+  "This namespace defines a model for graph nodes."
   (:require [clojure.spec.alpha      :as s]
             [zettel.id               :as id]
             [zettel.vault.vault-file :as vault-file]))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Type specs                                                             ║
+; ╚════════════════════════════════════════════════════════════════════════╝
 
 (def ^:private id-set (s/coll-of ::id/t :kind set?))
 (s/def ::links     id-set)
@@ -12,6 +17,10 @@
                   ;; Self-referential links are disallowed for simplicity sake.
                   #(not (contains? (::links %) (::vault-file/id %)))
                   #(not (contains? (::backlinks %) (::vault-file/id %)))))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Constructor                                                            ║
+; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef vault-file->
   :args (s/cat :vault-file ::vault-file/t)
