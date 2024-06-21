@@ -24,43 +24,40 @@
 ; ║ Private ::graph/t spec helpers                                         ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(s/fdef has-backlink?
-  :args (s/cat :backlinks ::backlinks :from ::id/t :to ::id/t)
-  :ret  boolean?)
-(defn- has-backlink? [backlinks from to]
-  (contains? (get backlinks to #{}) from))
-
-(s/fdef every-link-in-backlinks?
-  :args (s/cat :k (s/keys :req [::nodes ::backlinks]))
-  :ret  boolean?)
-(defn- every-link-in-backlinks? [{::keys [nodes backlinks]}]
-  (let [links (->> nodes
-                   (#(map    (fn [[from node]] [from (::node/links node)]) %))
-                   (#(mapcat (fn [[from links]] (map (fn [to] [from to]) links)) %)))]
-    (every? (fn [[from to]] (has-backlink? backlinks from to))
-            links)))
-
-(defn- flattened-backlinks
-  [backlinks]
-  (mapcat (fn [[to froms]] (map (fn [from] {:to to :from from})
-                                froms))
-          backlinks))
 (defn- has-link?
-  [nodes {:keys [from to]}]
-  (contains? (-> nodes (get from) ::node/links) to))
-(defn- every-backlink-in-links?
-  [{::keys [nodes backlinks]}]
-  (let [bs (flattened-backlinks backlinks)]
-    (every? #(has-link? nodes %) bs)))
+  [nodes [from to]]
+  (contains? (get-in nodes [from ::node/links]) to))
 
-(comment
-  (->
-   {::nodes {1 {::node/links #{}}
-             2 {::node/links #{1}}
-             3 {::node/links #{1 2}}}
-    ::backlinks {1 #{2 3}
-                 2 #{3}}}
-   every-backlink-in-links?))
+(defn- flatten-backlinks-set
+  [[to from-ids]]
+  (map (fn [from] [from to]) from-ids))
+
+(defn- flatten-backlinks-map
+  [backlinks]
+  (mapcat flatten-backlinks-set backlinks))
+
+(defn- every-backlink-has-its-mirroring-link?
+  [{::keys [nodes backlinks]}]
+  (every? (partial has-link? nodes)
+          (flatten-backlinks-map backlinks)))
+
+(defn- has-backlink? [backlinks [from to]]
+  (contains? (get backlinks to) from))
+
+(defn- flatten-links-from-node
+  [node]
+  (let [from   (::vault-file/id node)
+        to-ids (::node/links node)]
+    (map (fn [to] [from to]) to-ids)))
+
+(defn- flatten-links-from-nodes-map
+  [nodes]
+  (mapcat flatten-links-from-node nodes))
+
+(defn- every-link-has-its-mirroring-backlink?
+  [{::keys [nodes backlinks]}]
+  (every? (partial has-backlink? backlinks)
+          (flatten-links-from-nodes-map (vals nodes))))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type spec: ::graph/t                                                   ║
@@ -68,8 +65,8 @@
 
 (s/def ::t (s/and ::vault/t
                   (s/keys :req [::nodes ::backlinks])
-                  every-link-in-backlinks?
-                  every-backlink-in-links?))
+                  every-link-has-its-mirroring-backlink?
+                  every-backlink-has-its-mirroring-link?))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Constructor                                                            ║
