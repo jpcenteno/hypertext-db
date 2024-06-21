@@ -69,7 +69,7 @@
       ;; The map data structure was chosen for `::graph/nodes` to serve as an
       ;; index by node id, then, every key must match the value's node id.
 
-      (testing "An offending graph"
+      (testing "A `::graph/nodes` index with a  mismatching key"
         ;; In this example, the value for `node-a-id` has a different node id:
         (let [graph (assoc (empty-graph) ::graph/nodes {node-a-id node-b})]
 
@@ -90,7 +90,7 @@
       ;; that every link described in the later is reciprocated in the
       ;; former.
 
-      (testing "An offending graph"
+      (testing "A graph with a missing backlink"
         ;; In this example, the `::graph/nodes` map describes the following
         ;; graph:
         ;;
@@ -142,7 +142,7 @@
       ;; {node-b-id #{node-a-id}}
       ;; ```
 
-      (testing "An offending graph"
+      (testing "A graph with a non-reciprocated backlink"
         ;; Here, we are using a modified version of `node-a` called
         ;; `node-a-without-links` where the link to `node-b-id` has been
         ;; removed.
