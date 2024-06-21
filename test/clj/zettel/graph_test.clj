@@ -84,16 +84,30 @@
                 (is (s/valid? ::graph/t graph))))))
 
         (testing "every link should have a reciprocal mapping in `::graph/backlinks`:"
+          ;; The `::graph/backlinks` map is a reverse-index for
+          ;; the links declared in the `::graph/nodes` map. It's fundamental
+          ;; that every link described in the later is reciprocated in the
+          ;; former.
 
-          (testing "Invalid graph"
-            (let [graph (-> graph
-                            (assoc ::graph/nodes {node-a-id node-a}))]
-              (is (not (s/valid? ::graph/t graph)))))
-          (testing "Valid graph"
-            (let [graph (-> graph
-                            (assoc ::graph/nodes {node-a-id node-a})
-                            (assoc ::graph/backlinks {node-b-id #{node-a-id}}))]
-              (is (s/valid? ::graph/t graph))))))
+          (testing "An offending graph"
+            ;; In this example, the `::graph/nodes` map describes the following
+            ;; graph:
+            ;;
+            ;; [A] -> [B]
+            ;;
+            ;; While `::graph/backlinks` is empty.
+            (let [graph (merge graph
+                               {::graph/nodes     {node-a-id node-a
+                                                   node-b-id node-b}
+                                ::graph/backlinks {}})]
+
+              (testing "is invalid"
+                (is (not (s/valid? ::graph/t graph))))
+
+              (testing "can be fixed by adding the missing backlink"
+                ;; To fix the broken graph, we can ad the missing backlink.
+                (let [graph (assoc graph ::graph/backlinks {node-b-id #{node-a-id}})]
+                  (is (s/valid? ::graph/t graph))))))))
 
       (testing "Links from ::graph/backlinks"
 
