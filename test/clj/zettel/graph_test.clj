@@ -108,7 +108,36 @@
           (testing "can be fixed by adding the missing backlink"
             ;; To fix the broken graph, we can ad the missing backlink.
             (let [graph (assoc graph ::graph/backlinks {node-b-id #{node-a-id}})]
-              (is (s/valid? ::graph/t graph))))))))
+              (is (s/valid? ::graph/t graph)))))))
+
+    (testing "Nodes are allowed to have links pointing to unknown nodes"
+      ;; Nodes are allowed to contain link ids to nodes that are not included in
+      ;; the `::graph/nodes` map. The rationale is:
+      ;;
+      ;; - The node domain is unconcerned with the other nodes included in the
+      ;;   graph.
+      ;; - A node's file might link to a node that does not exist. This is an
+      ;;   external problem.
+      ;; - A node might link to another node that hasn't been added to the graph
+      ;;   yet.
+      ;;
+      ;; The only condition is that those links must be kept in the
+      ;; `::graph/backlinks` map in case that the missing nodes are added later.
+
+      (testing "A graph where a node has a link to a missing node and it's corresponding backlink"
+        ;; In this example, `graph` models a graph where a node `[A]` links to
+        ;; an unknown node `(B)`.
+        ;;
+        ;; [A] --> (B)
+        (let [graph (-> (empty-graph)
+                        (assoc ::graph/nodes     {node-a-id node-a})
+                        (assoc ::graph/backlinks {node-b-id #{node-a-id}}))]
+          (testing "Is valid"
+            (is (s/valid? ::graph/t graph)))
+
+          (testing "Is invalid if we remove the reverse link from `::graph/backlinks`"
+            (let [invalid-graph (update-in graph [::graph/backlinks node-b-id] disj node-a-id)]
+              (is (not (s/valid? ::graph/t invalid-graph)))))))))
 
   (testing "Links from ::graph/backlinks"
 
@@ -222,22 +251,7 @@
             ;; Which is a subset from the graph represented by
             ;; `::graph/nodes`.
             (let [graph (update-in graph [::graph/backlinks node-b-id] disj node-a-id)]
-              (is (s/valid? ::graph/t graph)))))))
-
-    (testing "A graph may contain backlinks to unknown nodes"
-      ;; By design, nodes contain link ids without any knowledge about which
-      ;; other nodes belong to the graph (The node domain is a layer below the
-      ;; graph domain).
-      ;;
-      ;; A node might link to a node that wasn't added yet to the graph
-      ;; or a broken link in the worst case scenario.
-      ;;
-      ;; Every operation that adds a node to the graph must replicate every
-      ;; backlink in hopes that the linked node will be added in the future.
-      (let [graph (-> (empty-graph)
-                      (assoc ::graph/nodes     {node-a-id node-a})
-                      (assoc ::graph/backlinks {node-b-id #{node-a-id}}))]
-        (is (s/valid? ::graph/t graph))))))
+              (is (s/valid? ::graph/t graph)))))))))
 
 (deftest vault->
   (tmp/with-tmp-dir
