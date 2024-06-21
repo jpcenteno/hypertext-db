@@ -49,6 +49,14 @@
 ;; This test was originally writen to TDD the `::graph/t` type spec. It has been
 ;; since refactored to serve as documentation for the restrictions imposed by
 ;; the mentioned spec.
+;;
+;; This should be more relavant to mantainers rather than users of this library.
+;;
+;; As an implementation note, since we are dealing with examples that break the
+;; `::graph/t` type invariants, we can't use any function that takes or returns
+;; the mentioned data type. Doing so should raise an instrumentation error. On
+;; one hand, this makes the code more tied to the implementation and harder to
+;; follow, on the other hand, it showcases it's internal structure.
 (deftest spec
   (tmp/with-tmp-dir
     (let [vault (vault/dir-> tmp/dir)
