@@ -7,14 +7,11 @@
             [zettel.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
-; ║ Type specs : Graph                                                     ║
+; ║ Type specs : Graph attributes                                          ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (defn- key-equals-node-id? [[k node]]
   (= k (::vault-file/id node)))
-
-(defn- set-does-not-contain-key? [[k ids]]
-  (not (contains? ids k)))
 
 (s/def ::nodes (s/and (s/map-of ::id/t ::node/t)
                       (s/every key-equals-node-id?)))
@@ -22,6 +19,10 @@
 ;; Backlinks exists to keep track of links to nodes that are not in the graph
 ;; yet or do not exist.
 (s/def ::backlinks (s/and (s/map-of ::id/t ::node/backlinks)))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Private ::graph/t spec helpers                                         ║
+; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef has-backlink?
   :args (s/cat :backlinks ::backlinks :from ::id/t :to ::id/t)
@@ -60,6 +61,10 @@
     ::backlinks {1 #{2 3}
                  2 #{3}}}
    every-backlink-in-links?))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Type spec: ::graph/t                                                   ║
+; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/def ::t (s/and ::vault/t
                   (s/keys :req [::nodes ::backlinks])
