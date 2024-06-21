@@ -19,9 +19,20 @@
 (defn- create-node []
   (-> "some.ext" vault-file/random node/vault-file->))
 
-(def ^:private node-bob   (create-node))
+(def ^:private node-bob
+  "A node without outgoing links."
+  (create-node))
+
 (def ^:private id-bob     (::vault-file/id node-bob))
-(def ^:private node-alice (assoc (create-node) ::node/links #{id-bob}))
+
+(def ^:private node-alice
+  "A node that links to `node-bob`"
+  (assoc (create-node) ::node/links #{id-bob}))
+
+(def ^:private node-alice-without-links
+  "A modified `node-alice` without the link to `node-bob`."
+  (assoc node-alice ::node/links #{}))
+
 (def ^:private id-alice   (::vault-file/id node-alice))
 
 (comment
@@ -78,10 +89,9 @@
             (is (s/valid? ::graph/t graph)))))
 
       (testing "Every backlink from `::graph/backlinks` must have a corresponding mapping in `::graph/notes`"
-        (let [node-alice-without-links (assoc node-alice ::node/links #{})
-              graph                    (-> graph
-                                           (assoc ::graph/nodes {id-alice node-alice-without-links})
-                                           (assoc ::graph/backlinks {id-bob #{id-alice}}))]
+        (let [graph (-> graph
+                        (assoc ::graph/nodes {id-alice node-alice-without-links})
+                        (assoc ::graph/backlinks {id-bob #{id-alice}}))]
 
           (testing "A graph is invalid when a backlink is not reflected by ::graph/nodes"
             (is (not (s/valid? ::graph/t graph))))
