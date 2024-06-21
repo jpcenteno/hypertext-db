@@ -35,18 +35,6 @@
 
 (def ^:private id-alice   (::vault-file/id node-alice))
 
-(comment
-
-  (tmp/with-tmp-dir
-    (let [graph (-> tmp/dir
-                    vault/dir->
-                    graph/vault->
-                    (assoc ::graph/nodes     {id-alice node-alice id-bob node-bob})
-                    (assoc ::graph/backlinks {id-bob #{id-alice}}))]
-      (mapcat (fn [[id node]] (map)) (::graph/nodes graph)))))
-
-((fn [[id node]] (map (partial conj [id]) (::node/links node))) [:the-id {::node/links #{:link-1 :link-2}}])
-
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type spec tests and documentation                                      ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
