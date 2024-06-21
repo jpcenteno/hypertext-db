@@ -39,14 +39,6 @@
     (every? (fn [[from to]] (has-backlink? backlinks from to))
             links)))
 
-(s/fdef every-backlink-comes-from-a-node?
-  :args (s/cat :k (s/keys :req [::nodes ::backlinks]))
-  :ret  boolean?)
-(defn- every-backlink-comes-from-a-node?
-  [{::keys [nodes backlinks]}]
-  (let [from-coll (->> backlinks vals (reduce set/union))]
-    (every? #(contains? nodes %) from-coll)))
-
 (defn- flattened-backlinks
   [backlinks]
   (mapcat (fn [[to froms]] (map (fn [from] {:to to :from from})
@@ -72,7 +64,6 @@
 (s/def ::t (s/and ::vault/t
                   (s/keys :req [::nodes ::backlinks])
                   every-link-in-backlinks?
-                  every-backlink-comes-from-a-node?
                   every-backlink-in-links?))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
