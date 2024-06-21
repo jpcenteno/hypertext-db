@@ -77,15 +77,18 @@
             (is (s/valid? ::graph/t graph)))))
 
       (testing "Every backlink from `::graph/backlinks` must have a corresponding mapping in `::graph/notes`"
-        (let [graph (-> graph
-                        (assoc ::graph/nodes {id-alice node-alice-without-links})
-                        (assoc ::graph/backlinks {id-bob #{id-alice}}))]
 
-          (testing "A graph is invalid when a backlink is not reflected by ::graph/nodes"
-            (is (not (s/valid? ::graph/t graph))))
+        (testing "A graph is invalid when a backlink is not reflected by ::graph/nodes"
+          (let [graph (merge graph
+                             {::graph/nodes     {id-alice node-alice-without-links}
+                              ::graph/backlinks {id-bob #{id-alice}}})]
+            (is (not (s/valid? ::graph/t graph)))))
 
-          (testing "We can fix the graph by adding the link to the corresponding node"
-            (is (s/valid? ::graph/t (assoc graph ::graph/nodes {id-alice node-alice}))))))
+        (testing "We can fix the graph by adding the link to the corresponding node"
+          (let [graph (merge graph
+                             {::graph/nodes     {id-alice node-alice}
+                              ::graph/backlinks {id-bob #{id-alice}}})]
+            (is (s/valid? ::graph/t graph)))))
 
       (testing "A graph may contain backlinks to unknown nodes"
         ;; By design, nodes contain link ids without any knowledge about which
