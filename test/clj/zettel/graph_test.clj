@@ -48,12 +48,21 @@
           graph (graph/vault-> vault)]
 
       (testing "Every key in the `::graph/nodes` map must match the node's key:"
-        (testing "Invalid graph"
+        ;; The map data structure was chosen for `::graph/nodes` to serve as an
+        ;; index by node id, then, every key must match the value's node id.
+        (testing "An offending graph"
+          ;; In this example, the value for `id-alice` has a different node id:
           (let [graph (assoc graph ::graph/nodes {id-alice node-bob})]
-            (is (not (s/valid? ::graph/t graph)))))
-        (testing "Valid graph"
-          (let [graph (assoc graph ::graph/nodes {id-bob node-bob})]
-            (is (s/valid? ::graph/t graph)))))
+            (testing "is invalid"
+              (is (not (s/valid? ::graph/t graph)))))
+
+          (testing "can be fixed by replacing the value with a node with the correct id"
+            (let [graph (assoc-in graph [::graph/nodes id-alice] node-alice-without-links)]
+              (is (s/valid? ::graph/t graph))))
+
+          (testing "can be fixed by removing the offending node from `::graph/nodes`"
+            (let [graph (update graph ::graph/nodes dissoc id-alice)]
+              (is (s/valid? ::graph/t graph))))))
 
       (testing "Every link from `::graph/nodes` have a corresponding mapping in `::graph/backlinks`:"
         (testing "Invalid graph"
