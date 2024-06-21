@@ -192,23 +192,3 @@
 
         (testing "without any backlinks"
           (is (empty? (::backlinks graph))))))))
-
-(comment
-  (deftest graph-type-spec
-    (testing "Each key in ::nodes matches the node's id"
-      (tmp/with-tmp-dir
-        (let [node              (create-node)
-              mismatching-id    (id/random)
-              graph             (-> tmp/dir
-                                    vault/dir->
-                                    graph/vault->)]
-          (is (s/valid? ::graph/t graph))
-          (is (not (s/valid? ::graph/t (assoc-in graph  [::nodes mismatching-id] node)))))))
-
-    (testing "Each node backlink should point to an existing node"
-    ;; Otherwise, where did the backlink came from?
-      (tmp/with-tmp-dir
-        (let [bad-id (id/random)
-              node   (update (create-node) ::backlinks conj bad-id)
-              graph  (-> tmp/dir vault/dir-> graph/vault-> (graph/insert-node node))]
-          (is (not (s/valid? ::graph/t graph))))))))
