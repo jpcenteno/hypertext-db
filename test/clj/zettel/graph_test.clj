@@ -114,17 +114,34 @@
 
     (testing "must come from node id's contained by `::graph/nodes`:"
 
-      (testing "Invalid graph"
-        (let [graph (merge (empty-graph)
-                           {::graph/nodes     {}
-                            ::graph/backlinks {node-b-id #{node-a-id}}})]
-          (is (not (s/valid? ::graph/t graph)))))
+      (testing "A graph with a backlink comming from a node id which is not present in `::graph/nodes`"
+        ;; In this example we have a graph where `::graph/nodes` can be
+        ;; represented as:
+        ;;
+        ;; [B]
+        ;;
+        ;; While `::graph/backlinks` can be represented as:
+        ;;
+        ;; [B] <-- [A]
+        ;;
+        ;; Here, the `[B] <-- [A]` backlink comes from nonwhere!
+        (let [invalid-graph (merge (empty-graph)
+                                   {::graph/nodes     {node-b-id node-b}
+                                    ::graph/backlinks {node-b-id #{node-a-id}}})]
 
-      (testing "Valid graph"
-        (let [graph (merge (empty-graph)
-                           {::graph/nodes     {node-a-id node-a}
-                            ::graph/backlinks {node-b-id #{node-a-id}}})]
-          (is (s/valid? ::graph/t graph)))))
+          (testing "is invalid"
+            (is (not (s/valid? ::graph/t invalid-graph))))
+
+          (testing "can be fixed by adding a node that reflects the backlink"
+            ;; We can insert a node [A] that links to the node [B] in order to
+            ;; complete the reciprocal link. Now `::graph/nodes` can be
+            ;; represented as:
+            ;;
+            ;; [A] --> [B]
+            ;;
+            ;; Which matches the links described by `::graph/backlinks`
+            (let [graph (assoc-in invalid-graph [::graph/nodes node-a-id] node-a)]
+              (is (s/valid? ::graph/t graph)))))))
 
     (testing "must be reciprocated by `::graph/notes`:"
       ;; Every edge described by `::graph/backlinks` is required to have a
