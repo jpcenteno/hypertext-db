@@ -159,7 +159,7 @@
       ;; {node-b-id #{node-a-id}}
       ;; ```
 
-      (testing "A graph with a non-reciprocated backlink"
+      (testing "A graph with a non-reciprocated backlink from an existing node"
         ;; Here, we are using a modified version of `node-a` called
         ;; `node-a-without-links` where the link to `node-b-id` has been
         ;; removed.
@@ -192,7 +192,9 @@
                            {::graph/nodes     {node-a-id node-a-without-links
                                                node-b-id   node-b}
                             ::graph/backlinks {node-b-id #{node-a-id}}})]
-          (is (not (s/valid? ::graph/t graph)))
+
+          (testing "is invalid"
+            (is (not (s/valid? ::graph/t graph))))
 
           (testing "can be fixed by adding the missing link to `::graph/nodes`"
             ;; We can "fix" the previous graph by adding a link from
