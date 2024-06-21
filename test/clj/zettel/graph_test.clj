@@ -62,33 +62,38 @@
     (let [vault (vault/dir-> tmp/dir)
           graph (graph/vault-> vault)]
 
-      (testing "Every key in the `::graph/nodes` map must match the node's key:"
-        ;; The map data structure was chosen for `::graph/nodes` to serve as an
-        ;; index by node id, then, every key must match the value's node id.
-        (testing "An offending graph"
-          ;; In this example, the value for `node-a-id` has a different node id:
-          (let [graph (assoc graph ::graph/nodes {node-a-id node-b})]
-            (testing "is invalid"
+      (testing "In the `::graph/nodes` map"
+
+        (testing "every key should match the node's id."
+          ;; The map data structure was chosen for `::graph/nodes` to serve as an
+          ;; index by node id, then, every key must match the value's node id.
+
+          (testing "An offending graph"
+            ;; In this example, the value for `node-a-id` has a different node id:
+            (let [graph (assoc graph ::graph/nodes {node-a-id node-b})]
+
+              (testing "is invalid"
+                (is (not (s/valid? ::graph/t graph)))))
+
+            (testing "can be fixed by replacing the value with the correct node"
+              (let [graph (assoc-in graph [::graph/nodes node-a-id] node-a-without-links)]
+                (is (s/valid? ::graph/t graph))))
+
+            (testing "can be fixed by removing the offending element from `::graph/nodes`"
+              (let [graph (update graph ::graph/nodes dissoc node-a-id)]
+                (is (s/valid? ::graph/t graph))))))
+
+        (testing "every link should have a reciprocal mapping in `::graph/backlinks`:"
+
+          (testing "Invalid graph"
+            (let [graph (-> graph
+                            (assoc ::graph/nodes {node-a-id node-a}))]
               (is (not (s/valid? ::graph/t graph)))))
-
-          (testing "can be fixed by replacing the value with a node with the correct id"
-            (let [graph (assoc-in graph [::graph/nodes node-a-id] node-a-without-links)]
-              (is (s/valid? ::graph/t graph))))
-
-          (testing "can be fixed by removing the offending node from `::graph/nodes`"
-            (let [graph (update graph ::graph/nodes dissoc node-a-id)]
+          (testing "Valid graph"
+            (let [graph (-> graph
+                            (assoc ::graph/nodes {node-a-id node-a})
+                            (assoc ::graph/backlinks {node-b-id #{node-a-id}}))]
               (is (s/valid? ::graph/t graph))))))
-
-      (testing "Every link from `::graph/nodes` have a corresponding mapping in `::graph/backlinks`:"
-        (testing "Invalid graph"
-          (let [graph (-> graph
-                          (assoc ::graph/nodes {node-a-id node-a}))]
-            (is (not (s/valid? ::graph/t graph)))))
-        (testing "Valid graph"
-          (let [graph (-> graph
-                          (assoc ::graph/nodes {node-a-id node-a})
-                          (assoc ::graph/backlinks {node-b-id #{node-a-id}}))]
-            (is (s/valid? ::graph/t graph)))))
 
       (testing "Links from ::graph/backlinks"
 
@@ -107,50 +112,50 @@
               (is (s/valid? ::graph/t graph)))))
 
         (testing "must be reciprocated by `::graph/notes`:"
-          ;; Every edge described by `::graph/backlinks` is required to have a
-          ;; reciprocal edge in the links described by `::graph/nodes`.
-          ;;
-          ;; Supose that we have the following `::graph/nodes` map:
-          ;;
-          ;; ```clojure
-          ;; {node-a-id {::node/links #{node-b-id} ...}}
-          ;; ```
-          ;;
-          ;; Then, `::graph/backlinks` must be equal to:
-          ;;
-          ;; ```clojure
-          ;; {node-b-id #{node-a-id}}
-          ;; ```
-
-          (testing "An offending graph"
-            ;; Here, we are using a modified version of `node-a` called
-            ;; `node-a-without-links` where the link to `node-b-id` has been
-            ;; removed.
+            ;; Every edge described by `::graph/backlinks` is required to have a
+            ;; reciprocal edge in the links described by `::graph/nodes`.
             ;;
-            ;; Here, our `::graph/nodes` map looks like:
+            ;; Supose that we have the following `::graph/nodes` map:
             ;;
             ;; ```clojure
-            ;; {node-a-id {::node/links #{}}
-            ;;  node-b-id {::node/links #{}}}
-            ;; ```
-            ;; The graph described by `::graph/nodes` can be represented as:
-            ;;
-            ;; ```
-            ;; [node-b-id]     [node-a-id]
+            ;; {node-a-id {::node/links #{node-b-id} ...}}
             ;; ```
             ;;
-            ;; At the same time we kept the same `::graph/backlinks` map from
-            ;; the other examples:
+            ;; Then, `::graph/backlinks` must be equal to:
             ;;
             ;; ```clojure
             ;; {node-b-id #{node-a-id}}
             ;; ```
-            ;;
-            ;; In this case, `::graph/backlinks` describes the following graph:
-            ;;
-            ;; ```
-            ;; [node-b-id] <-- [node-a-id]
-            ;; ```
+
+          (testing "An offending graph"
+              ;; Here, we are using a modified version of `node-a` called
+              ;; `node-a-without-links` where the link to `node-b-id` has been
+              ;; removed.
+              ;;
+              ;; Here, our `::graph/nodes` map looks like:
+              ;;
+              ;; ```clojure
+              ;; {node-a-id {::node/links #{}}
+              ;;  node-b-id {::node/links #{}}}
+              ;; ```
+              ;; The graph described by `::graph/nodes` can be represented as:
+              ;;
+              ;; ```
+              ;; [node-b-id]     [node-a-id]
+              ;; ```
+              ;;
+              ;; At the same time we kept the same `::graph/backlinks` map from
+              ;; the other examples:
+              ;;
+              ;; ```clojure
+              ;; {node-b-id #{node-a-id}}
+              ;; ```
+              ;;
+              ;; In this case, `::graph/backlinks` describes the following graph:
+              ;;
+              ;; ```
+              ;; [node-b-id] <-- [node-a-id]
+              ;; ```
             (let [graph (merge graph
                                {::graph/nodes     {node-a-id node-a-without-links
                                                    node-b-id   node-b}
@@ -158,43 +163,43 @@
               (is (not (s/valid? ::graph/t graph)))
 
               (testing "can be fixed by adding the missing link to `::graph/nodes`"
-                ;; We can "fix" the previous graph by adding a link from
-                ;; `node-a-id` to `node-b-id`.
-                ;;
-                ;; Now, `::graph/nodes` describes the same graph as
-                ;; `::graph/backlinks`:
-                ;;
-                ;; ```
-                ;; [node-b-id] <-- [node-a-id]
-                ;; ```
+                  ;; We can "fix" the previous graph by adding a link from
+                  ;; `node-a-id` to `node-b-id`.
+                  ;;
+                  ;; Now, `::graph/nodes` describes the same graph as
+                  ;; `::graph/backlinks`:
+                  ;;
+                  ;; ```
+                  ;; [node-b-id] <-- [node-a-id]
+                  ;; ```
                 (let [graph (update-in graph [::graph/nodes node-a-id ::node/links] conj node-b-id)]
                   (is (s/valid? ::graph/t graph))))
 
               (testing "can be fixed by removing the offending backlink"
-                ;; Another way to fix the problem is to remove the offending
-                ;; backlink.
-                ;;
-                ;; Now, the `::graph/backlinks` map represents the following graph:
-                ;;
-                ;; ```clojure
-                ;; [node-b-id]
-                ;; ```
-                ;;
-                ;; Which is a subset from the graph represented by
-                ;; `::graph/nodes`.
+                  ;; Another way to fix the problem is to remove the offending
+                  ;; backlink.
+                  ;;
+                  ;; Now, the `::graph/backlinks` map represents the following graph:
+                  ;;
+                  ;; ```clojure
+                  ;; [node-b-id]
+                  ;; ```
+                  ;;
+                  ;; Which is a subset from the graph represented by
+                  ;; `::graph/nodes`.
                 (let [graph (update-in graph [::graph/backlinks node-b-id] disj node-a-id)]
                   (is (s/valid? ::graph/t graph)))))))
 
         (testing "A graph may contain backlinks to unknown nodes"
-        ;; By design, nodes contain link ids without any knowledge about which
-        ;; other nodes belong to the graph (The node domain is a layer below the
-        ;; graph domain).
-        ;;
-        ;; A node might link to a node that wasn't added yet to the graph
-        ;; or a broken link in the worst case scenario.
-        ;;
-        ;; Every operation that adds a node to the graph must replicate every
-        ;; backlink in hopes that the linked node will be added in the future.
+          ;; By design, nodes contain link ids without any knowledge about which
+          ;; other nodes belong to the graph (The node domain is a layer below the
+          ;; graph domain).
+          ;;
+          ;; A node might link to a node that wasn't added yet to the graph
+          ;; or a broken link in the worst case scenario.
+          ;;
+          ;; Every operation that adds a node to the graph must replicate every
+          ;; backlink in hopes that the linked node will be added in the future.
           (let [graph (-> graph
                           (assoc ::graph/nodes     {node-a-id node-a})
                           (assoc ::graph/backlinks {node-b-id #{node-a-id}}))]
