@@ -11,12 +11,9 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef value-does-not-contain-key?
-  :args (s/cat :tuple (s/cat :k any? :v coll?))
-  :ret  boolean?
-  :fn   #(let [v (get-in % [:args :tuple :v])
-               k (get-in % [:args :tuple :k])
-               ret (:ret %)]
-           (not= ret (contains? v k))))
+  :args (s/cat :tuple (s/tuple any? coll?))
+  :ret  boolean?)
+
 (defn- value-does-not-contain-key?
   [[k v]]
   (not (contains? v k)))
