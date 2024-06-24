@@ -19,7 +19,7 @@
 
 ;; Backlinks exists to keep track of links to nodes that are not in the graph
 ;; yet or do not exist.
-(s/def ::backlinks (s/and (s/map-of ::id/t ::node/backlinks)))
+(s/def ::backlinks ::backlinks/t)
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Private ::graph/t spec helpers                                         ║

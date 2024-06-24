@@ -95,7 +95,7 @@
                               (link-op-invariant-fn (fn [backlinks from to _ret] (not (links? backlinks from to))))
                               (link-op-invariant-fn (fn [backlinks _from _to ret] (= ret backlinks))))))
 
-(defn- remove
+(defn remove
   [bs id-from id-to]
   (let [set' (disj (get bs id-to) id-from)]
     (if (empty? set')

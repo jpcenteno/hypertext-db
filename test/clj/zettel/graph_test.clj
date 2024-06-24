@@ -7,7 +7,8 @@
             [zettel.helpers.tmp      :as tmp]
             [zettel.id               :as id]
             [zettel.vault            :as vault]
-            [zettel.vault.vault-file :as vault-file]))
+            [zettel.vault.vault-file :as vault-file]
+            [zettel.graph.backlinks-impl :as backlinks]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Test data                                                              ║
@@ -107,7 +108,9 @@
 
           (testing "can be fixed by adding the missing backlink"
             ;; To fix the broken graph, we can ad the missing backlink.
-            (let [graph (assoc graph ::graph/backlinks {node-b-id #{node-a-id}})]
+            (let [id-from node-a-id
+                  id-to   node-b-id
+                  graph   (update graph ::graph/backlinks backlinks/add id-from id-to)]
               (is (s/valid? ::graph/t graph)))))))
 
     (testing "Nodes are allowed to have links pointing to unknown nodes"
@@ -250,7 +253,7 @@
             ;;
             ;; Which is a subset from the graph represented by
             ;; `::graph/nodes`.
-            (let [graph (update-in graph [::graph/backlinks node-b-id] disj node-a-id)]
+            (let [graph (update graph ::graph/backlinks backlinks/remove node-a-id node-b-id)]
               (is (s/valid? ::graph/t graph)))))))))
 
 (deftest vault->
