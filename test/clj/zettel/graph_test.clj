@@ -269,3 +269,17 @@
 
         (testing "without any backlinks"
           (is (empty? (::backlinks graph))))))))
+
+(deftest insert-node
+
+  (testing "Inserting a leaf node"
+    (let [graph (-> (empty-graph) (graph/insert-node node-b))]
+      (testing "assocs the node to `::graph/nodes`"
+        (is (= node-b (get-in graph [::graph/nodes node-b-id]))))))
+
+  (testing "Inserting a node with a link"
+    (let [graph (-> (empty-graph) (graph/insert-node node-a))]
+      (testing "assocs the node to `::graph/nodes`"
+        (is (= node-a (get-in graph [::graph/nodes node-a-id]))))
+      (testing "inserts the mirroring backlink"
+        (is (contains? (get-in graph [::graph/backlinks node-b-id]) node-a-id))))))

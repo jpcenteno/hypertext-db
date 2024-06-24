@@ -3,6 +3,7 @@
             [clojure.spec.alpha      :as s]
             [zettel.graph.node       :as node]
             [zettel.id               :as id]
+            [zettel.graph.backlinks-impl :as backlinks]
             [zettel.vault            :as vault]
             [zettel.vault.vault-file :as vault-file]))
 
@@ -84,9 +85,52 @@
       (assoc ::nodes {})
       (assoc ::backlinks {})))
 
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Observers                                                              ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef includes-node?
+  :args (s/cat :graph ::t :id ::vault-file/id)
+  :ret  boolean?)
+(defn includes-node?
+  "Does the graph include a node with that `id`?"
+  [graph id]
+  (contains? (::nodes graph) id))
+
+(s/fdef links-to?
+  :args (s/cat :graph ::t :from ::vault-file/id :to ::vault-file/id)
+  :ret  boolean?)
+(defn links-to?
+  "Does the node with id `from` have a directed link to the node with id `to`?"
+  [graph from to]
+  ;; Thanks to the spec for `::t` that specifies that backlinks are a reflection
+  ;; of the links declared in the nodes from `::nodes`, we can use `::backlinks`
+  ;; for a simpler implementation.
+  (contains? (get-in graph [::backlinks to]) from))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Node operations                                                        ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
 (s/fdef insert-node
-  :args (s/cat :graph ::t :node ::node)
-  :ret  ::t)
+  :args (s/cat :graph ::t :node ::node/t)
+  :ret  ::t
+  :fn   (s/and
+         ;; NOTE that there is no need to add any predicate about `::backlinks`.
+         ;; Those will be covered by the spec for `::t` provided we cover the
+         ;; function invariants for `::nodes`.
+         #(let [input-node    (get-in % [:args :node])
+                input-node-id (::vault-file/id input-node)
+                node-from-out (get-in % [:ret ::nodes input-node-id])]
+            (= input-node node-from-out))
+         ;; Every other node remains unchanged.
+         #(let [input-node-id  (get-in % [:args :node ::vault-file/id])
+                nodes-from-in  (get-in % [:args :graph ::nodes])
+                nodes-from-out (get-in % [:ret ::nodes])]
+            (= nodes-from-in (dissoc nodes-from-out input-node-id)))))
 (defn insert-node
   [graph node]
-  (update graph ::nodes assoc node))
+  (let [id (::vault-file/id node)]
+    (-> graph
+        (assoc-in [::nodes id] node)
+        (update ::backlinks backlinks/add-from-node node))))

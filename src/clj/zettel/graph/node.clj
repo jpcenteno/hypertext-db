@@ -2,6 +2,7 @@
   "This namespace defines a model for graph nodes."
   (:require [clojure.spec.alpha      :as s]
             [zettel.id               :as id]
+            [zettel.graph.link       :as link]
             [zettel.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -31,3 +32,14 @@
   (-> vault-file
       (assoc ::links     #{})
       (assoc ::backlinks #{})))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Observers                                                              ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef ->links
+  :args (s/cat :node ::t)
+  :ret  (s/coll-of ::link/t)
+  :fn   (s/and #(let [node-id (-> % :args :node ::vault-file/id)]
+                  (every? (fn [[from _]] (= node-id from)) (:ret %)))
+               #(let [tos (-> % :args :node ::links)])))
