@@ -283,3 +283,21 @@
         (is (= node-a (get-in graph [::graph/nodes node-a-id]))))
       (testing "inserts the mirroring backlink"
         (is (contains? (get-in graph [::graph/backlinks node-b-id]) node-a-id))))))
+
+(deftest remove-node
+
+  (testing "Returns the graph without"
+    (testing "A node that was not contained by the graph in the first place"
+      (let [graph (empty-graph)]
+        (is (= graph (graph/remove-node graph node-a)))
+        (is (= graph (graph/remove-node graph node-b)))))
+
+    (testing "A node without links"
+      (let [graph-1 (empty-graph)
+            graph-2 (graph/insert-node graph-1 node-b)]
+        (is (= graph-1 (graph/remove-node graph-2 node-b)))))
+
+    (testing "A node with links"
+      (let [graph-1 (empty-graph)
+            graph-2 (graph/insert-node graph-1 node-a)]
+        (is (= graph-1 (graph/remove-node graph-2 node-a)))))))
