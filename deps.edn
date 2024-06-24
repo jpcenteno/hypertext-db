@@ -9,5 +9,6 @@
            :test
            {:main-opts ["-m" "kaocha.runner"]
             :extra-paths ["test/clj"]
-            :extra-deps {lambdaisland/kaocha {:mvn/version "1.87.1366"}
+            :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
+                         lambdaisland/kaocha {:mvn/version "1.87.1366"}
                          orchestra/orchestra {:mvn/version "2021.01.01-1"}}}}}
