@@ -1,6 +1,7 @@
 (ns zettel.vault-test
   (:require [clojure.test :refer [deftest is testing]]
             [zettel.helpers.tmp :as tmp]
+            [zettel.test.fixtures :as fixtures]
             [zettel.id :as id]
             [zettel.vault :as vault]
             [zettel.vault.vault-file :as vault-file]
@@ -12,7 +13,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (defn- random-vault-file-name [extension]
-  (str (id/->str (id/random)) "." extension))
+  (str (id/->str (fixtures/id)) "." extension))
 
 (defn- create-vault-file [vault-directory extension]
   (let [filename (random-vault-file-name extension)

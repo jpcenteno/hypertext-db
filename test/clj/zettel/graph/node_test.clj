@@ -3,6 +3,7 @@
             [clojure.spec.alpha      :as s]
             [clojure.test            :refer [deftest is testing]]
             [zettel.graph.node       :as node]
+            [zettel.test.fixtures    :as fixtures]
             [zettel.id               :as id]
             [zettel.vault.vault-file :as vault-file]))
 
@@ -15,8 +16,8 @@
 
     (testing "Sample valid `::node/t` with links and backlinks"
       (is (s/valid? ::node/t (merge some-vault-file
-                                    {::node/links     #{(id/random)}
-                                     ::node/backlinks #{(id/random)}}))))
+                                    {::node/links     #{(fixtures/id)}
+                                     ::node/backlinks #{(fixtures/id)}}))))
 
     (testing "Links to self are invalid"
       (is (not (s/valid? ::node/t

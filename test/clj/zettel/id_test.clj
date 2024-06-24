@@ -1,5 +1,6 @@
 (ns zettel.id-test
   (:require [zettel.id :as id]
+            [zettel.test.fixtures :as fixtures]
             [clojure.test :refer [deftest is testing]]
             [failjure.core :as f]))
 
@@ -24,7 +25,7 @@
 
 (deftest ->str
   (testing "Round trip"
-    (let [id (id/random)]
+    (let [id (fixtures/id)]
       (is (= (-> id id/->str id/str->) id)))))
 
 (deftest id-string?

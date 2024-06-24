@@ -24,13 +24,6 @@
 ; ║ Public - Constructors                                                  ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(s/fdef random
-  :args (s/cat)
-  :ret ::t)
-(defn random
-  []
-  (vec (repeatedly n #(rand-nth words))))
-
 (s/fdef str->
   :args (s/cat :s string?)
   :ret  (s/or :ok ::t :fail f/failed?))
