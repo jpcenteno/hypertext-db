@@ -13,12 +13,12 @@
 (s/def ::links     id-set)
 (s/def ::backlinks id-set)
 
-(s/def ::t (s/and ::vault-file/t
-                  (s/keys :req [::links ::backlinks])
+(s/def ::t (s/and
+            (s/keys :req [::links ::backlinks])
+            ::vault-file/t
                   ;; Self-referential links are disallowed for simplicity sake.
-                  #(not (contains? (::links %) (::vault-file/id %)))
-                  #(not (contains? (::backlinks %) (::vault-file/id %)))))
-
+            #(not (contains? (::links %) (::vault-file/id %)))
+            #(not (contains? (::backlinks %) (::vault-file/id %)))))
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Constructor                                                            ║
 ; ╚════════════════════════════════════════════════════════════════════════╝

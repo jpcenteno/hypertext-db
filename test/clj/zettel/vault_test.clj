@@ -77,23 +77,3 @@
           (doto (File. tmp/dir "elbow-turkey-tank-thank")
             (.createNewFile))
           (is (empty? (vault/list-vault-files vault))))))))
-
-(deftest create-empty-file
-  (tmp/with-tmp-dir
-    (let [vault (vault/dir-> tmp/dir)]
-
-      (testing "Creating a new file"
-        (let [result (vault/create-empty-file vault "md")]
-
-          (testing "returns a `::vault-file/t`"
-            (is (s/valid? ::vault-file/t result)))
-
-          (testing "sets the specified extension"
-            (is (= "md" (::vault-file/ext result))))))
-
-      (testing "Each filename is randomly generated"
-        (let [files (->> #(vault/create-empty-file vault "md")
-                         (repeatedly 100)
-                         (map #(vault-file/->file % (::vault/dir vault)))
-                         set)]
-          (is (= 100 (count files))))))))

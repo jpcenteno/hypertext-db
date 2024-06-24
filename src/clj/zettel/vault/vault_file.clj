@@ -30,7 +30,7 @@
 
 (s/def ::id ::id/t)
 (s/def ::ext (s/and string? valid-extension?))
-(s/def ::last-modified-ms (s/and #(instance? Long %) #(<= 0 %)))
+(s/def ::last-modified-ms (s/and int? #(<= 0 %)))
 
 (s/def ::t (s/keys :req [::id ::ext ::last-modified-ms]))
 
@@ -93,20 +93,6 @@
     {::id               id
      ::ext              ext
      ::last-modified-ms (.lastModified file)}))
-
-(s/fdef random
-  :args (s/cat :extension ::ext)
-  :ret  ::t
-  :fn   (s/and #(= (-> % :ret ::ext) (-> % :args :extension))
-               #(zero? (-> % :ret ::last-modified-ms))))
-(defn random
-  "Creates a `::vault-file/t` without creating it in the file system. Uses
-  the provided `extension`, generates a random `::id` and sets it's
-  `::last-modified-ms` to `0`."
-  [extension]
-  {::id (id/random)
-   ::ext extension
-   ::last-modified-ms 0})
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Public: Type conversions                                               ║

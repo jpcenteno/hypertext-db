@@ -4,7 +4,14 @@
             [zettel.id               :as id]
             [zettel.vault.vault-file :as vault-file]))
 
-(defn id []
-  (first (gen/sample (s/gen ::id/t) 1)))
+(defn- generate-one
+  [spec]
+  (first (gen/sample (s/gen spec) 1)))
 
-(defn vault-file)
+(s/fdef id :ret ::id/t)
+(defn id []
+  (generate-one ::id/t))
+
+(s/fdef vault-file :ret ::vault-file/t)
+(defn vault-file []
+  (generate-one ::vault-file/t))

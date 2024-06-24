@@ -8,7 +8,8 @@
             [zettel.id               :as id]
             [zettel.vault            :as vault]
             [zettel.vault.vault-file :as vault-file]
-            [zettel.graph.backlinks-impl :as backlinks]))
+            [zettel.graph.backlinks-impl :as backlinks]
+            [zettel.test.fixtures :as fixtures]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Test data                                                              ║
@@ -28,7 +29,7 @@
   :args (s/cat)
   :ret ::node/t)
 (defn- create-node []
-  (-> "some.ext" vault-file/random node/vault-file->))
+  (-> (fixtures/vault-file) node/vault-file->))
 
 (def ^:private node-b
   "A node without outgoing links."

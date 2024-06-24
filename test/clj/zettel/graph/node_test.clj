@@ -4,11 +4,10 @@
             [clojure.test            :refer [deftest is testing]]
             [zettel.graph.node       :as node]
             [zettel.test.fixtures    :as fixtures]
-            [zettel.id               :as id]
             [zettel.vault.vault-file :as vault-file]))
 
 (deftest spec
-  (let [some-vault-file (vault-file/random "md")]
+  (let [some-vault-file (fixtures/vault-file)]
     (testing "Sample valid `::node/t` without links nor backlinks"
       (is (s/valid? ::node/t (merge some-vault-file
                                     {::node/links     #{}
@@ -33,7 +32,7 @@
 
 (deftest vault-file->
   (testing "`vault-file->` returns a node"
-    (let [some-vault-file (vault-file/random "md")
+    (let [some-vault-file (fixtures/vault-file)
           node            (node/vault-file-> some-vault-file)]
 
       (testing "that retains every attribute from the input vault-file"
@@ -45,3 +44,7 @@
 
       (testing "without any backlink"
         (is (empty? (::node/backlinks node)))))))
+
+(comment (->> (fixtures/vault-file)
+              (node/vault-file->)
+              (s/explain ::node/t)))
