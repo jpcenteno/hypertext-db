@@ -49,4 +49,4 @@
 (defn node
   "Generates a random `::node/t`."
   ([]  (node {}))
-  ([m] (-> (vault-file) (node/vault-file->) (merge m))))
+  ([m] (-> ::node/t generate-one (merge m))))

@@ -24,28 +24,15 @@
 ;;
 ;; [A] --> [B]
 
-(s/fdef create-node
-  :args (s/cat)
-  :ret ::node/t)
-(defn- create-node []
-  (-> (fixtures/vault-file) node/vault-file->))
-
-(def ^:private node-b
-  "A node without outgoing links."
-  (create-node))
-
-(def ^:private node-b-id (::vault-file/id node-b))
-
-(def ^:private node-a
-  "A node that links to `node-b`"
-  (assoc (create-node) ::node/links #{node-b-id}))
+(def ^:private node-b-id (fixtures/id "node-b.file"))
+(def ^:private node-b    (fixtures/node {::vault-file/id node-b-id ::node/links #{}}))
+(def ^:private node-a-id (fixtures/id "node-a.file"))
+(def ^:private node-a    (fixtures/node {::vault-file/id node-a-id ::node/links #{node-b-id}}))
 
 (def ^:private node-a-without-links
   "A modified `node-a` without the link to `node-b`. Used for some of the
   tests."
   (assoc node-a ::node/links #{}))
-
-(def ^:private node-a-id   (::vault-file/id node-a))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type spec tests and documentation                                      ║
