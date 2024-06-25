@@ -1,7 +1,6 @@
 (ns zettel.graph.node
   "This namespace defines a model for graph nodes."
   (:require [clojure.spec.alpha      :as s]
-            [zettel.id               :as id]
             [zettel.graph.link       :as link]
             [zettel.vault.vault-file :as vault-file]))
 
@@ -9,7 +8,7 @@
 ; ║ Type specs                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(def ^:private id-set (s/coll-of ::id/t :kind set?))
+(def ^:private id-set (s/coll-of ::vault-file/id :kind set?))
 (s/def ::links     id-set)
 (s/def ::backlinks id-set)
 
