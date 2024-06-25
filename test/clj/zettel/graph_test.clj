@@ -1,6 +1,9 @@
 (ns zettel.graph-test
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
+            [clojure.spec.gen.alpha  :as gen]
+            [clojure.test.check.properties :as prop]
+            [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test            :refer [deftest is testing]]
             [zettel.graph            :as graph]
             [zettel.graph.node       :as node]
@@ -265,7 +268,9 @@
   (testing "Inserting a leaf node"
     (let [graph (-> (empty-graph) (graph/insert-node node-b))]
       (testing "assocs the node to `::graph/nodes`"
-        (is (= node-b (get-in graph [::graph/nodes node-b-id]))))))
+        (is (= node-b (get-in graph [::graph/nodes node-b-id]))))
+      (testing "Is idempotent"
+        (is (= graph (graph/insert-node graph node-b))))))
 
   (testing "Inserting a node with a link"
     (let [graph (-> (empty-graph) (graph/insert-node node-a))]
@@ -273,6 +278,13 @@
         (is (= node-a (get-in graph [::graph/nodes node-a-id]))))
       (testing "inserts the mirroring backlink"
         (is (contains? (get-in graph [::graph/backlinks node-b-id]) node-a-id))))))
+
+(declare insert-node-is-idempotent)
+(defspec insert-node-is-idempotent 10
+  (prop/for-all
+   [node (s/gen ::node/t)]
+   (is (= (-> (empty-graph) (graph/insert-node node))
+          (-> (empty-graph) (graph/insert-node node) (graph/insert-node node))))))
 
 (deftest remove-node
 

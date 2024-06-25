@@ -126,7 +126,8 @@
          #(let [input-node-id  (get-in % [:args :node ::vault-file/id])
                 nodes-from-in  (get-in % [:args :graph ::nodes])
                 nodes-from-out (get-in % [:ret ::nodes])]
-            (= nodes-from-in (dissoc nodes-from-out input-node-id)))))
+            (= (dissoc nodes-from-in input-node-id)
+               (dissoc nodes-from-out input-node-id)))))
 (defn insert-node
   [graph node]
   (let [id (::vault-file/id node)]
