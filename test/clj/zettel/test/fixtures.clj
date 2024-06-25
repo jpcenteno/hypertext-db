@@ -4,6 +4,11 @@
             [zettel.id               :as id]
             [zettel.vault.vault-file :as vault-file]))
 
+(s/def ::vault-file/id
+  (s/with-gen ::vault-file/id
+    (fn [] (gen/such-that #'vault-file/relative-file?
+                          (gen/fmap #(java.io.File. %) (gen/string))))))
+
 (defn- generate-one
   [spec]
   (first (gen/sample (s/gen spec) 1)))
