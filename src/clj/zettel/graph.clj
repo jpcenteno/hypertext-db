@@ -111,6 +111,28 @@
 ; ║ Node operations                                                        ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
+(defn- node-op-invariant-fn [f]
+  #(let [{:keys [ret args]} %
+         {:keys [graph node]} args]
+     (f ret graph node)))
+
+;; FIXME this will break if we try to remove an updated node where
+;; `::node/links` has changed.
+(s/fdef remove-node
+  :args (s/cat :graph ::t :node ::node/t)
+  :ret ::t
+  :fn (s/and (node-op-invariant-fn
+              (fn [ret graph node]
+                (let [nodes-arg (::nodes graph)
+                      nodes-ret (::nodes ret)
+                      node-id   (node/id node)]
+                  (= nodes-ret (dissoc nodes-arg node-id)))))))
+(defn remove-node
+  [graph node]
+  (-> graph
+      (update ::nodes dissoc (::vault-file/id node))
+      (update ::backlinks backlinks/remove-from-node node)))
+
 (s/fdef insert-node
   :args (s/cat :graph ::t :node ::node/t)
   :ret  ::t
@@ -132,28 +154,6 @@
   [graph node]
   (let [id (::vault-file/id node)]
     (-> graph
+        (remove-node node)
         (assoc-in [::nodes id] node)
         (update ::backlinks backlinks/add-from-node node))))
-
-(defn- node-op-invariant-fn [f]
-  #(let [{:keys [ret args]} %
-         {:keys [graph node]} args]
-     (f ret graph node)))
-
-;; FIXME this will break if we try to remove an updated node where
-;; `::node/links` has changed.
-(s/fdef remove-node
-  :args (s/cat :graph ::t :node ::node/t)
-  :ret ::t
-  :fn (s/and (node-op-invariant-fn
-              (fn [ret _graph node] (not (contains-node-with-id? ret node))))
-             (node-op-invariant-fn
-              (fn [ret graph node]
-                (if (contains-node-with-id? graph (::vault-file/id node))
-                  (= graph (insert-node ret node))
-                  (= graph ret))))))
-(defn remove-node
-  [graph node]
-  (-> graph
-      (update ::nodes dissoc (::vault-file/id node))
-      (update ::backlinks backlinks/remove-from-node node)))
