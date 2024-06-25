@@ -2,6 +2,7 @@
   (:require [clojure.spec.alpha      :as s]
             [clojure.spec.gen.alpha  :as gen]
             [pathetic.core           :as path]
+            [zettel.graph.node       :as node]
             [zettel.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
@@ -19,8 +20,9 @@
   (first (gen/sample (s/gen spec) 1)))
 
 (s/fdef id :ret ::vault-file/id)
-(defn id []
-  (generate-one ::vault-file/id))
+(defn id
+  ([]  (generate-one ::vault-file/id))
+  ([s] (File. s)))
 
 (s/fdef vault-file :ret ::vault-file/t)
 (defn vault-file
@@ -42,3 +44,9 @@
        (.createNewFile)
        (.setLastModified (::vault-file/last-modified-ms vf)))
      vf)))
+
+(s/fdef node :ret ::node/t)
+(defn node
+  "Generates a random `::node/t`."
+  ([]  (node {}))
+  ([m] (-> (vault-file) (node/vault-file->) (merge m))))
