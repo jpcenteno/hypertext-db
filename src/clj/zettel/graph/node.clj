@@ -35,6 +35,15 @@
 ; ║ Observers                                                              ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
+(s/fdef id
+  :args (s/cat :node ::t)
+  :ret  ::vault-file/id
+  :fn   #(= (:ret %) (-> % :args :node ::vault-file/id)))
+(defn id
+  "Returns the node id"
+  [node]
+  (::vault-file/id node))
+
 (s/fdef ->links
   :args (s/cat :node ::t)
   :ret  (s/coll-of ::link/t)
