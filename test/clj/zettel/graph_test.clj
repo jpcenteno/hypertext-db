@@ -5,7 +5,6 @@
             [zettel.graph            :as graph]
             [zettel.graph.node       :as node]
             [zettel.helpers.tmp      :as tmp]
-            [zettel.id               :as id]
             [zettel.vault            :as vault]
             [zettel.vault.vault-file :as vault-file]
             [zettel.graph.backlinks-impl :as backlinks]
