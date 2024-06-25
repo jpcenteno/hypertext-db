@@ -36,9 +36,7 @@
 
   (testing "Lists files under directories"
     (is (tmp/with-tmp-dir
-          (let [_subdir    (doto (File. tmp/dir "subdir")
-                             (.mkdir))
-                attrs      {::vault-file/id (File. "subdir/test-file-in-subdirectory.md")}
+          (let [attrs      {::vault-file/id (File. "subdir/test-file-in-subdirectory.md")}
                 vault-file (fixtures/vault-file-that-exists tmp/dir attrs)
                 result     (-> tmp/dir vault/dir-> vault/list-vault-files)]
             (contains? result vault-file)))))
