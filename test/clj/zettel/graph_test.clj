@@ -1,7 +1,6 @@
 (ns zettel.graph-test
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
-            [clojure.spec.gen.alpha  :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test            :refer [deftest is testing]]
