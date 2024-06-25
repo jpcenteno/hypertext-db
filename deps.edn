@@ -11,4 +11,8 @@
             :extra-paths ["test/clj"]
             :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
                          lambdaisland/kaocha {:mvn/version "1.87.1366"}
-                         orchestra/orchestra {:mvn/version "2021.01.01-1"}}}}}
+                         orchestra/orchestra {:mvn/version "2021.01.01-1"}}}
+
+           :codox {:extra-deps {codox/codox {:mvn/version "0.10.8"}}
+                   :exec-fn codox.main/generate-docs
+                   :exec-args {:source-paths ["src/clj"]}}}}
