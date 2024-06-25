@@ -129,9 +129,11 @@
                   (= nodes-ret (dissoc nodes-arg node-id)))))))
 (defn remove-node
   [graph node]
-  (-> graph
-      (update ::nodes dissoc (::vault-file/id node))
-      (update ::backlinks backlinks/remove-from-node node)))
+  (if-let [node (get-in graph [::nodes (node/id node)])]
+    (-> graph
+        (update ::nodes dissoc (::vault-file/id node))
+        (update ::backlinks backlinks/remove-from-node node))
+    graph))
 
 (s/fdef insert-node
   :args (s/cat :graph ::t :node ::node/t)

@@ -277,7 +277,14 @@
       (testing "assocs the node to `::graph/nodes`"
         (is (= node-a (get-in graph [::graph/nodes node-a-id]))))
       (testing "inserts the mirroring backlink"
-        (is (contains? (get-in graph [::graph/backlinks node-b-id]) node-a-id))))))
+        (is (contains? (get-in graph [::graph/backlinks node-b-id]) node-a-id)))))
+
+  (testing "Inserting a changed version of a node"
+    (is (let [node  (fixtures/node)
+              node' (fixtures/node {::vault-file/id (node/id node)})
+              graph (empty-graph)]
+          (is (= (-> graph (graph/insert-node node'))
+                 (-> graph (graph/insert-node node) (graph/insert-node node'))))))))
 
 (declare insert-node-is-idempotent)
 (defspec insert-node-is-idempotent 10
@@ -285,6 +292,18 @@
    [node (s/gen ::node/t)]
    (is (= (-> (empty-graph) (graph/insert-node node))
           (-> (empty-graph) (graph/insert-node node) (graph/insert-node node))))))
+
+(declare insert-node-is-able-to-perform-updates)
+(defspec insert-node-is-able-to-perform-updates 10
+  (prop/for-all
+   [node   (s/gen ::node/t)
+    links  (s/gen ::node/links)
+    links' (s/gen ::node/links)]
+   (is (let [node (assoc node ::node/links links)
+             node' (assoc node ::node/links links')
+             graph (empty-graph)]
+         (is (= (graph/insert-node graph node')
+                (-> graph (graph/insert-node node) (graph/insert-node node'))))))))
 
 (deftest remove-node
 
@@ -302,7 +321,14 @@
     (testing "A node with links"
       (let [graph-1 (empty-graph)
             graph-2 (graph/insert-node graph-1 node-a)]
-        (is (= graph-1 (graph/remove-node graph-2 node-a)))))))
+        (is (= graph-1 (graph/remove-node graph-2 node-a))))))
+
+  (testing "When provided an altered version of a node, removes the contained node with the same id"
+    (is (let [graph (empty-graph)
+              node  (fixtures/node)
+              node' (fixtures/node {::vault-file/id (node/id node)})]
+          (= graph
+             (-> graph (graph/insert-node node) (graph/remove-node node')))))))
 
 (declare remove-node-is-idempotent)
 (defspec remove-node-is-idempotent 10
@@ -311,3 +337,13 @@
    (is (let [graph (graph/insert-node (empty-graph) node)]
          (= (-> graph (graph/remove-node node))
             (-> graph (graph/remove-node node) (graph/remove-node node)))))))
+
+(declare remove-node-succeeds-when-provided-an-altered-version-of-a-node)
+(defspec remove-node-succeeds-when-provided-an-altered-version-of-a-node
+  (prop/for-all
+   [node (s/gen ::node/t)
+    node' (s/gen ::node/t)]
+   (is (let [graph (empty-graph)
+             node' (assoc node' ::vault-file/id (node/id node))]
+         (= graph
+            (-> graph (graph/insert-node node) (graph/remove-node node')))))))
