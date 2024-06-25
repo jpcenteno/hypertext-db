@@ -2,7 +2,6 @@
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
             [zettel.graph.node       :as node]
-            [zettel.id               :as id]
             [zettel.graph.backlinks-impl :as backlinks]
             [zettel.vault            :as vault]
             [zettel.vault.vault-file :as vault-file]))
@@ -14,7 +13,7 @@
 (defn- key-equals-node-id? [[k node]]
   (= k (::vault-file/id node)))
 
-(s/def ::nodes (s/and (s/map-of ::id/t ::node/t)
+(s/def ::nodes (s/and (s/map-of ::vault-file/id ::node/t)
                       (s/every key-equals-node-id?)))
 
 ;; Backlinks exists to keep track of links to nodes that are not in the graph
