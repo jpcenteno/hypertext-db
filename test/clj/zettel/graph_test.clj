@@ -303,3 +303,11 @@
       (let [graph-1 (empty-graph)
             graph-2 (graph/insert-node graph-1 node-a)]
         (is (= graph-1 (graph/remove-node graph-2 node-a)))))))
+
+(declare remove-node-is-idempotent)
+(defspec remove-node-is-idempotent 10
+  (prop/for-all
+   [node (s/gen ::node/t)]
+   (is (let [graph (graph/insert-node (empty-graph) node)]
+         (= (-> graph (graph/remove-node node))
+            (-> graph (graph/remove-node node) (graph/remove-node node)))))))
