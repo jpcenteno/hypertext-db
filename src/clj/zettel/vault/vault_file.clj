@@ -2,8 +2,7 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
             [failjure.core :as f]
-            [zettel.id :as id])
-  (:import (java.io File)))
+            [zettel.id :as id]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Module constants                                                       ║
@@ -17,9 +16,6 @@
 
 (defn- file? [x]
   (instance? java.io.File x))
-
-(defn- dir? [x]
-  (and (file? x) (.isDirectory x)))
 
 (s/fdef valid-extension?
   :args (s/cat :s string?)
