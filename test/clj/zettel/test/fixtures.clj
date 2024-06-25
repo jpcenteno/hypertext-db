@@ -2,7 +2,6 @@
   (:require [clojure.spec.alpha      :as s]
             [clojure.spec.gen.alpha  :as gen]
             [pathetic.core           :as path]
-            [zettel.id               :as id]
             [zettel.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
@@ -19,9 +18,9 @@
   [spec]
   (first (gen/sample (s/gen spec) 1)))
 
-(s/fdef id :ret ::id/t)
+(s/fdef id :ret ::vault-file/id)
 (defn id []
-  (generate-one ::id/t))
+  (generate-one ::vault-file/id))
 
 (s/fdef vault-file :ret ::vault-file/t)
 (defn vault-file
