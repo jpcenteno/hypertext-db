@@ -1,91 +1,45 @@
 (ns zettel.vault.vault-file
-  (:require [clojure.spec.alpha :as s]
-            [clojure.string :as str]
-            [failjure.core :as f]
-            [zettel.id :as id]))
-
-; ╔════════════════════════════════════════════════════════════════════════╗
-; ║ Module constants                                                       ║
-; ╚════════════════════════════════════════════════════════════════════════╝
-
-(def ^:private ^:const file-extension-regex #"^\w+(?:\.\w+)*$")
+  "This namespace provides a model to represent files contained within the
+  vault that are known to the database.
+  
+  By design, it only provides a data structure and does not perform any file
+  system operation, relying instead on the data provided as parameters."
+  (:require [clojure.spec.alpha :as s]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(defn- file? [x]
-  (instance? java.io.File x))
+(defn- relative-file?
+  "Is `x` a `java.io.File` instance containing a relative path?"
+  [x]
+  (and (instance? java.io.File x)
+       (not (.isAbsolute x))
+       (not= (java.io.File. "") x)))
 
-(s/fdef valid-extension?
-  :args (s/cat :s string?)
-  :ret boolean?)
-(defn- valid-extension?
-  [s]
-  (some? (re-matches file-extension-regex s)))
-
-(s/def ::id ::id/t)
-(s/def ::ext (s/and string? valid-extension?))
+(s/def ::id relative-file?)
 (s/def ::last-modified-ms (s/and int? #(<= 0 %)))
 
-(s/def ::t (s/keys :req [::id ::ext ::last-modified-ms]))
-
-; ╔════════════════════════════════════════════════════════════════════════╗
-; ║ Private helpers                                                        ║
-; ╚════════════════════════════════════════════════════════════════════════╝
-
-(s/fdef validate-file-extension
-  :args (s/cat :x any?)
-  :ret  (s/or :ok ::ext :error f/failed?))
-(defn- validate-file-extension [x]
-  (f/assert-with #(s/valid? ::ext %) x "Invalid file extension"))
-
-(s/fdef validate-id-string
-  :args (s/cat :x any?)
-  :ret  (s/or :ok id/id-string? :fail f/failed?))
-(defn- validate-id-string [x]
-  (f/assert-with id/id-string? x "Invalid id string"))
-
-(s/fdef filename-and-extension
-  :args (s/cat :file file?)
-  :ret  (s/or :ok   (s/cat :file-name id/id-string? :extension ::ext)
-              :fail f/failed?))
-(defn- filename-and-extension
-  "Splits file into its file-name and extension. Discards directories."
-  [file]
-  (let [without-directory    (.getName file)
-        [filename extension] (str/split without-directory #"\." 2)]
-    (f/attempt-all [filename  (validate-id-string      filename)
-                    extension (validate-file-extension extension)]
-      [filename extension])))
+(s/def ::t (s/keys :req [::id ::last-modified-ms]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Public: Constructors                                                   ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef file->
-  :args (s/cat :file file?)
-  :ret  (s/or :ok ::t :error f/failed?))
+  :args (s/alt :unary  (s/cat :file relative-file?)
+               :binary (s/cat :file relative-file? :last-modified-ms ::last-modified-ms))
+  :ret  ::t
+  :fn   (s/and #(= (-> % :ret ::id) (-> % :args second :file))
+               #(= (-> % :ret ::last-modified-ms) (-> % :args second :last-modified-ms (or 0)))))
 (defn file->
-  "Constructs a `::vault-file/t` given a file. Returns a Failjure `f/failed?`
-  value when provided a file with an invalid name.
-  
-  THIS FUNCTION PERFORMS SIDE EFFECTS.
+  "Constructs a `::vault-file/t` representing a file in the vault directory.
+  Uses `last-modified-ms` if provided falling back to 0.
 
-  DESIGN DECISION:
-
-  The `vault-file` domain assumes that any file passed ito it resides at
-  the top level of the `vault` directory. All directory related information
-  will be discarded.
-  
-  ## Some philosophical notes
-  
-  Not every file conforms a valid `::vault-file/t`. Nonetheless, due to it's
-  name, this function should accept any file instance."
-  [file]
-  (f/attempt-all [v               (filename-and-extension file)
-                  [base-name ext] v
-                  id              (id/str-> base-name)]
-    {::id               id
-     ::ext              ext
-     ::last-modified-ms (.lastModified file)}))
+  By design decision, this namespace does not perform file-system IO
+  operations, pushing that concern to the upper layers."
+  ([file]
+   (file-> file 0))
+  ([file last-modified-ms]
+   {::id file
+    ::last-modified-ms last-modified-ms}))
