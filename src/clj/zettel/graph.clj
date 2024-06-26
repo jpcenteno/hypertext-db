@@ -85,29 +85,6 @@
       (assoc ::backlinks {})))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
-; ║ Observers                                                              ║
-; ╚════════════════════════════════════════════════════════════════════════╝
-
-(s/fdef contains-node-with-id?
-  :args (s/cat :graph ::t :id ::vault-file/id)
-  :ret  boolean?)
-(defn- contains-node-with-id?
-  "Does the graph include a node with that `id`?"
-  [graph id]
-  (contains? (::nodes graph) id))
-
-(s/fdef links-to?
-  :args (s/cat :graph ::t :from ::vault-file/id :to ::vault-file/id)
-  :ret  boolean?)
-(defn links-to?
-  "Does the node with id `from` have a directed link to the node with id `to`?"
-  [graph from to]
-  ;; Thanks to the spec for `::t` that specifies that backlinks are a reflection
-  ;; of the links declared in the nodes from `::nodes`, we can use `::backlinks`
-  ;; for a simpler implementation.
-  (contains? (get-in graph [::backlinks to]) from))
-
-; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Node operations                                                        ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
