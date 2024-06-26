@@ -138,21 +138,13 @@
 (s/fdef conj-node
   :args (s/cat :graph ::t :node ::node/t)
   :ret  ::t
-  :fn   (s/and
-         ;; NOTE that there is no need to add any predicate about `::backlinks`.
-         ;; Those will be covered by the spec for `::t` provided we cover the
-         ;; function invariants for `::nodes`.
-         #(let [input-node    (get-in % [:args :node])
-                input-node-id (::vault-file/id input-node)
-                node-from-out (get-in % [:ret ::nodes input-node-id])]
-            (= input-node node-from-out))
-         ;; Every other node remains unchanged.
-         #(let [input-node-id  (get-in % [:args :node ::vault-file/id])
-                nodes-from-in  (get-in % [:args :graph ::nodes])
-                nodes-from-out (get-in % [:ret ::nodes])]
-            (= (dissoc nodes-from-in input-node-id)
-               (dissoc nodes-from-out input-node-id)))))
+  :fn   (s/and #(let [node (-> % :args :node)]
+                  (= node (get-in % [:ret ::nodes (node/id node)])))
+               #(let [id  (get-in % [:args :node ::vault-file/id])]
+                  (= (dissoc (get-in % [:args :graph ::nodes]) id)
+                     (dissoc (get-in % [:ret ::nodes])         id)))))
 (defn conj-node
+  "Conj[oin] node. Returns a new `graph` with the `node` 'added'."
   [graph node]
   (let [id (::vault-file/id node)]
     (-> graph
