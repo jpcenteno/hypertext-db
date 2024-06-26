@@ -135,7 +135,7 @@
         (update ::backlinks backlinks/remove-from-node node))
     graph))
 
-(s/fdef insert-node
+(s/fdef conj-node
   :args (s/cat :graph ::t :node ::node/t)
   :ret  ::t
   :fn   (s/and
@@ -152,7 +152,7 @@
                 nodes-from-out (get-in % [:ret ::nodes])]
             (= (dissoc nodes-from-in input-node-id)
                (dissoc nodes-from-out input-node-id)))))
-(defn insert-node
+(defn conj-node
   [graph node]
   (let [id (::vault-file/id node)]
     (-> graph

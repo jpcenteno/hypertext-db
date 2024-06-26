@@ -262,17 +262,17 @@
         (testing "without any backlinks"
           (is (empty? (::backlinks graph))))))))
 
-(deftest insert-node
+(deftest conj-node
 
   (testing "Inserting a leaf node"
-    (let [graph (-> (empty-graph) (graph/insert-node node-b))]
+    (let [graph (-> (empty-graph) (graph/conj-node node-b))]
       (testing "assocs the node to `::graph/nodes`"
         (is (= node-b (get-in graph [::graph/nodes node-b-id]))))
       (testing "Is idempotent"
-        (is (= graph (graph/insert-node graph node-b))))))
+        (is (= graph (graph/conj-node graph node-b))))))
 
   (testing "Inserting a node with a link"
-    (let [graph (-> (empty-graph) (graph/insert-node node-a))]
+    (let [graph (-> (empty-graph) (graph/conj-node node-a))]
       (testing "assocs the node to `::graph/nodes`"
         (is (= node-a (get-in graph [::graph/nodes node-a-id]))))
       (testing "inserts the mirroring backlink"
@@ -282,18 +282,18 @@
     (is (let [node  (fixtures/node)
               node' (fixtures/node {::vault-file/id (node/id node)})
               graph (empty-graph)]
-          (is (= (-> graph (graph/insert-node node'))
-                 (-> graph (graph/insert-node node) (graph/insert-node node'))))))))
+          (is (= (-> graph (graph/conj-node node'))
+                 (-> graph (graph/conj-node node) (graph/conj-node node'))))))))
 
-(declare insert-node-is-idempotent)
-(defspec insert-node-is-idempotent 10
+(declare conj-node-is-idempotent)
+(defspec conj-node-is-idempotent 10
   (prop/for-all
    [node (s/gen ::node/t)]
-   (is (= (-> (empty-graph) (graph/insert-node node))
-          (-> (empty-graph) (graph/insert-node node) (graph/insert-node node))))))
+   (is (= (-> (empty-graph) (graph/conj-node node))
+          (-> (empty-graph) (graph/conj-node node) (graph/conj-node node))))))
 
-(declare insert-node-is-able-to-perform-updates)
-(defspec insert-node-is-able-to-perform-updates 10
+(declare conj-node-is-able-to-perform-updates)
+(defspec conj-node-is-able-to-perform-updates 10
   (prop/for-all
    [node   (s/gen ::node/t)
     links  (s/gen ::node/links)
@@ -301,8 +301,8 @@
    (is (let [node (assoc node ::node/links links)
              node' (assoc node ::node/links links')
              graph (empty-graph)]
-         (is (= (graph/insert-node graph node')
-                (-> graph (graph/insert-node node) (graph/insert-node node'))))))))
+         (is (= (graph/conj-node graph node')
+                (-> graph (graph/conj-node node) (graph/conj-node node'))))))))
 
 (deftest remove-node
 
@@ -314,12 +314,12 @@
 
     (testing "A node without links"
       (let [graph-1 (empty-graph)
-            graph-2 (graph/insert-node graph-1 node-b)]
+            graph-2 (graph/conj-node graph-1 node-b)]
         (is (= graph-1 (graph/remove-node graph-2 node-b)))))
 
     (testing "A node with links"
       (let [graph-1 (empty-graph)
-            graph-2 (graph/insert-node graph-1 node-a)]
+            graph-2 (graph/conj-node graph-1 node-a)]
         (is (= graph-1 (graph/remove-node graph-2 node-a))))))
 
   (testing "When provided an altered version of a node, removes the contained node with the same id"
@@ -327,13 +327,13 @@
               node  (fixtures/node)
               node' (fixtures/node {::vault-file/id (node/id node)})]
           (= graph
-             (-> graph (graph/insert-node node) (graph/remove-node node')))))))
+             (-> graph (graph/conj-node node) (graph/remove-node node')))))))
 
 (declare remove-node-is-idempotent)
 (defspec remove-node-is-idempotent 10
   (prop/for-all
    [node (s/gen ::node/t)]
-   (is (let [graph (graph/insert-node (empty-graph) node)]
+   (is (let [graph (graph/conj-node (empty-graph) node)]
          (= (-> graph (graph/remove-node node))
             (-> graph (graph/remove-node node) (graph/remove-node node)))))))
 
@@ -345,4 +345,4 @@
    (is (let [graph (empty-graph)
              node' (assoc node' ::vault-file/id (node/id node))]
          (= graph
-            (-> graph (graph/insert-node node) (graph/remove-node node')))))))
+            (-> graph (graph/conj-node node) (graph/remove-node node')))))))
