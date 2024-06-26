@@ -304,45 +304,45 @@
          (is (= (graph/conj-node graph node')
                 (-> graph (graph/conj-node node) (graph/conj-node node'))))))))
 
-(deftest remove-node
+(deftest disj-node
 
   (testing "Returns the graph without"
     (testing "A node that was not contained by the graph in the first place"
       (let [graph (empty-graph)]
-        (is (= graph (graph/remove-node graph node-a)))
-        (is (= graph (graph/remove-node graph node-b)))))
+        (is (= graph (graph/disj-node graph node-a)))
+        (is (= graph (graph/disj-node graph node-b)))))
 
     (testing "A node without links"
       (let [graph-1 (empty-graph)
             graph-2 (graph/conj-node graph-1 node-b)]
-        (is (= graph-1 (graph/remove-node graph-2 node-b)))))
+        (is (= graph-1 (graph/disj-node graph-2 node-b)))))
 
     (testing "A node with links"
       (let [graph-1 (empty-graph)
             graph-2 (graph/conj-node graph-1 node-a)]
-        (is (= graph-1 (graph/remove-node graph-2 node-a))))))
+        (is (= graph-1 (graph/disj-node graph-2 node-a))))))
 
   (testing "When provided an altered version of a node, removes the contained node with the same id"
     (is (let [graph (empty-graph)
               node  (fixtures/node)
               node' (fixtures/node {::vault-file/id (node/id node)})]
           (= graph
-             (-> graph (graph/conj-node node) (graph/remove-node node')))))))
+             (-> graph (graph/conj-node node) (graph/disj-node node')))))))
 
-(declare remove-node-is-idempotent)
-(defspec remove-node-is-idempotent 10
+(declare disj-node-is-idempotent)
+(defspec disj-node-is-idempotent 10
   (prop/for-all
    [node (s/gen ::node/t)]
    (is (let [graph (graph/conj-node (empty-graph) node)]
-         (= (-> graph (graph/remove-node node))
-            (-> graph (graph/remove-node node) (graph/remove-node node)))))))
+         (= (-> graph (graph/disj-node node))
+            (-> graph (graph/disj-node node) (graph/disj-node node)))))))
 
-(declare remove-node-succeeds-when-provided-an-altered-version-of-a-node)
-(defspec remove-node-succeeds-when-provided-an-altered-version-of-a-node
+(declare disj-node-succeeds-when-provided-an-altered-version-of-a-node)
+(defspec disj-node-succeeds-when-provided-an-altered-version-of-a-node
   (prop/for-all
    [node (s/gen ::node/t)
     node' (s/gen ::node/t)]
    (is (let [graph (empty-graph)
              node' (assoc node' ::vault-file/id (node/id node))]
          (= graph
-            (-> graph (graph/conj-node node) (graph/remove-node node')))))))
+            (-> graph (graph/conj-node node) (graph/disj-node node')))))))

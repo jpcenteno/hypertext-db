@@ -118,7 +118,7 @@
 
 ;; FIXME this will break if we try to remove an updated node where
 ;; `::node/links` has changed.
-(s/fdef remove-node
+(s/fdef disj-node
   :args (s/cat :graph ::t :node ::node/t)
   :ret ::t
   :fn (s/and (node-op-invariant-fn
@@ -127,7 +127,8 @@
                       nodes-ret (::nodes ret)
                       node-id   (node/id node)]
                   (= nodes-ret (dissoc nodes-arg node-id)))))))
-(defn remove-node
+(defn disj-node
+  "Disj[oin]. Returns a new `graph` that does not contain the `node`."
   [graph node]
   (if-let [node (get-in graph [::nodes (node/id node)])]
     (-> graph
@@ -148,6 +149,6 @@
   [graph node]
   (let [id (::vault-file/id node)]
     (-> graph
-        (remove-node node)
+        (disj-node node)
         (assoc-in [::nodes id] node)
         (update ::backlinks backlinks/add-from-node node))))
