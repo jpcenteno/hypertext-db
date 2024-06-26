@@ -1,10 +1,10 @@
-(ns zettel.graph.node-test
+(ns hypertext-db.graph.node-test
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
             [clojure.test            :refer [deftest is testing]]
-            [zettel.graph.node       :as node]
-            [zettel.test.fixtures    :as fixtures]
-            [zettel.vault.vault-file :as vault-file]))
+            [hypertext-db.graph.node       :as node]
+            [hypertext-db.test.fixtures    :as fixtures]
+            [hypertext-db.vault.vault-file :as vault-file]))
 
 (deftest spec
   (let [some-vault-file (fixtures/vault-file)]

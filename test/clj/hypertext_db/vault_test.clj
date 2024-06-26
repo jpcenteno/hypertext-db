@@ -1,9 +1,9 @@
-(ns zettel.vault-test
+(ns hypertext-db.vault-test
   (:require [clojure.test :refer [deftest is testing]]
-            [zettel.helpers.tmp :as tmp]
-            [zettel.test.fixtures :as fixtures]
-            [zettel.vault :as vault]
-            [zettel.vault.vault-file :as vault-file]
+            [hypertext-db.helpers.tmp :as tmp]
+            [hypertext-db.test.fixtures :as fixtures]
+            [hypertext-db.vault :as vault]
+            [hypertext-db.vault.vault-file :as vault-file]
             [clojure.spec.alpha :as s])
   (:import (java.io File)))
 
@@ -12,7 +12,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (deftest dir->
-  (testing "Creates a ::zettel.vault instance"
+  (testing "Creates a ::hypertext-db.vault instance"
     (tmp/with-tmp-dir
       (is (s/valid? ::vault/t (vault/dir-> tmp/dir))))))
 

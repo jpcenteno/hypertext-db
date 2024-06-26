@@ -1,6 +1,6 @@
-(ns zettel.vault.vault-file-test
+(ns hypertext-db.vault.vault-file-test
   (:require [clojure.test :refer [deftest is testing]]
-            [zettel.vault.vault-file :as vault-file])
+            [hypertext-db.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
 (def test-file (File. "iron-clap-syrup-cruise.tar.bz2"))

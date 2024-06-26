@@ -1,4 +1,4 @@
-(ns zettel.vault.vault-file
+(ns hypertext-db.vault.vault-file
   "This namespace provides a model to represent files contained within the
   vault that are known to the database.
   

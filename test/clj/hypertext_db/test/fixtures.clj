@@ -1,9 +1,9 @@
-(ns zettel.test.fixtures
+(ns hypertext-db.test.fixtures
   (:require [clojure.spec.alpha      :as s]
             [clojure.spec.gen.alpha  :as gen]
             [pathetic.core           :as path]
-            [zettel.graph.node       :as node]
-            [zettel.vault.vault-file :as vault-file])
+            [hypertext-db.graph.node       :as node]
+            [hypertext-db.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
 (def ^:private relative-file-generator

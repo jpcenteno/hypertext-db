@@ -1,10 +1,10 @@
-(ns zettel.graph.backlinks-impl
+(ns hypertext-db.graph.backlinks-impl
   "This namespace provides specs and functions for internal use only. Use the
-  interface provided by `zettel.graph` instead."
+  interface provided by `hypertext-db.graph` instead."
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
-            [zettel.graph.node       :as node]
-            [zettel.vault.vault-file :as vault-file]))
+            [hypertext-db.graph.node       :as node]
+            [hypertext-db.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs                                                             ║

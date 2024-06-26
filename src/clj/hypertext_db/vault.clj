@@ -1,7 +1,7 @@
-(ns zettel.vault
+(ns hypertext-db.vault
   (:require [clojure.spec.alpha :as s]
             [pathetic.core :as path]
-            [zettel.vault.vault-file :as vault-file])
+            [hypertext-db.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗

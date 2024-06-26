@@ -1,8 +1,8 @@
-(ns zettel.graph.node
+(ns hypertext-db.graph.node
   "This namespace defines a model for graph nodes."
   (:require [clojure.spec.alpha      :as s]
-            [zettel.graph.link       :as link]
-            [zettel.vault.vault-file :as vault-file]))
+            [hypertext-db.graph.link       :as link]
+            [hypertext-db.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs                                                             ║

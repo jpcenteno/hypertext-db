@@ -1,10 +1,10 @@
-(ns zettel.graph
+(ns hypertext-db.graph
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
-            [zettel.graph.node       :as node]
-            [zettel.graph.backlinks-impl :as backlinks]
-            [zettel.vault            :as vault]
-            [zettel.vault.vault-file :as vault-file]))
+            [hypertext-db.graph.node       :as node]
+            [hypertext-db.graph.backlinks-impl :as backlinks]
+            [hypertext-db.vault            :as vault]
+            [hypertext-db.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs : Graph attributes                                          ║

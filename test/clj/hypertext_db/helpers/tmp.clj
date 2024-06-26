@@ -1,4 +1,4 @@
-(ns zettel.helpers.tmp
+(ns hypertext-db.helpers.tmp
   (:require [clojure.java.io :as io]))
 
 (def ^:dynamic dir :dir-not-initialized)
@@ -9,7 +9,7 @@
 
 (defn- random-tmp-dir-file []
   (io/file (System/getProperty "java.io.tmpdir")
-           (str "zettel-test-" (int (rand Integer/MAX_VALUE)))))
+           (str "hypertext-db-test-" (int (rand Integer/MAX_VALUE)))))
 
 (defn- create-tmp-dir []
   (loop [attempts-left 10]

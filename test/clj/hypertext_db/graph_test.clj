@@ -1,16 +1,16 @@
-(ns zettel.graph-test
+(ns hypertext-db.graph-test
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test            :refer [deftest is testing]]
-            [zettel.graph            :as graph]
-            [zettel.graph.node       :as node]
-            [zettel.helpers.tmp      :as tmp]
-            [zettel.vault            :as vault]
-            [zettel.vault.vault-file :as vault-file]
-            [zettel.graph.backlinks-impl :as backlinks]
-            [zettel.test.fixtures :as fixtures]))
+            [hypertext-db.graph            :as graph]
+            [hypertext-db.graph.node       :as node]
+            [hypertext-db.helpers.tmp      :as tmp]
+            [hypertext-db.vault            :as vault]
+            [hypertext-db.vault.vault-file :as vault-file]
+            [hypertext-db.graph.backlinks-impl :as backlinks]
+            [hypertext-db.test.fixtures :as fixtures]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Test data                                                              ║
