@@ -49,4 +49,7 @@
 (defn node
   "Generates a random `::node/t`."
   ([]  (node {}))
-  ([m] (-> ::node/t generate-one (merge m))))
+  ([m] (let [node (merge (generate-one ::node/t) m)]
+         ; Prevent the case where the random backlinks include an ID provided in
+         ; `m`.
+         (update node ::node/backlinks disj (node/id node)))))
