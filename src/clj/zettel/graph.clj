@@ -93,8 +93,6 @@
          {:keys [graph node]} args]
      (f ret graph node)))
 
-;; FIXME this will break if we try to remove an updated node where
-;; `::node/links` has changed.
 (s/fdef disj-node
   :args (s/cat :graph ::t :node ::node/t)
   :ret ::t
