@@ -343,6 +343,6 @@
    [node (s/gen ::node/t)
     node' (s/gen ::node/t)]
    (is (let [graph (empty-graph)
-             node' (assoc node' ::vault-file/id (node/id node))]
+             node' (-> node' (assoc ::vault-file/id (node/id node)) (update ::node/backlinks disj (node/id node)))]
          (= graph
             (-> graph (graph/conj-node node) (graph/disj-node node')))))))
