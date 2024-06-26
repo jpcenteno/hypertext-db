@@ -296,10 +296,8 @@
 (defspec conj-node-is-able-to-perform-updates 10
   (prop/for-all
    [node   (s/gen ::node/t)
-    links  (s/gen ::node/links)
-    links' (s/gen ::node/links)]
-   (is (let [node (assoc node ::node/links links)
-             node' (assoc node ::node/links links')
+    node'  (s/gen ::node/t)]
+   (is (let [node' (-> node' (assoc ::vault-file/id (node/id node)) (update ::node/backlinks disj (node/id node)))
              graph (empty-graph)]
          (is (= (graph/conj-node graph node')
                 (-> graph (graph/conj-node node) (graph/conj-node node'))))))))
