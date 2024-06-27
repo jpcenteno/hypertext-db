@@ -52,4 +52,4 @@
   ([m] (let [node (merge (generate-one ::node/t) m)]
          ; Prevent the case where the random backlinks include an ID provided in
          ; `m`.
-         (update node ::node/backlinks disj (::vault-file/id node)))))
+         (update node ::node/backlinks disj (node/id node)))))
