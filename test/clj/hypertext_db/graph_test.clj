@@ -337,9 +337,8 @@
 (declare disj-node-succeeds-when-provided-an-altered-version-of-a-node)
 (defspec disj-node-succeeds-when-provided-an-altered-version-of-a-node
   (prop/for-all
-   [node (s/gen ::node/t)
-    node' (s/gen ::node/t)]
+   [node (s/gen ::node/t)]
    (is (let [graph (empty-graph)
-             node' (-> node' (assoc ::vault-file/id (node/id node)) (update ::node/backlinks disj (node/id node)))]
+             node' (fixtures/node {::vault-file/id (node/id node)})]
          (= graph
             (-> graph (graph/conj-node node) (graph/disj-node node')))))))
