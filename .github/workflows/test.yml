@@ -8,8 +8,13 @@ jobs:
     - uses: cachix/install-nix-action@v25
     - uses: cachix/cachix-action@v14
       with:
-        # Don't push builds to Cachix. Use local cache instead.
+        # This input is unused, but required.
+        name: my-cache
+        # Skip pushing to Cachix. We only care about GitHub's cache.
         skipPush: true
+        # Same as before.
+        skipAddingSubstituter: true
+
 
     - name: Cache clojure dependencies
       uses: actions/cache@v4
