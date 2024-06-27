@@ -5,11 +5,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: cachix/install-nix-action@v25
-    - uses: cachix/cachix-action@v14
-      with:
-        # Don't push builds to Cachix. Use local cache instead.
-        skipPush: true
+    - uses: DeterminateSystems/nix-installer-action@main
+    - uses: DeterminateSystems/magic-nix-cache-action@main
 
     - name: Cache clojure dependencies
       uses: actions/cache@v4
