@@ -20,5 +20,8 @@ jobs:
         key: cljdeps-${{ hashFiles('deps.edn') }}
         restore-keys: cljdeps-
 
+    - name: Fetch nix packages
+      run: "nix develop --command true"
+
     - name: Clojure tests
       run: "nix develop --command ./bin/test"
