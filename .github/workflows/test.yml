@@ -20,5 +20,13 @@ jobs:
         key: cljdeps-${{ hashFiles('deps.edn') }}
         restore-keys: cljdeps-
 
+    - name: Cache the Nix store
+      uses: actions/cache@v4
+      with:
+        path: |
+          /nix/store
+        key: flake-lock-${{ hashFiles('flake.lock') }}
+        restore-keys: flake-lock-
+
     - name: Clojure tests
       run: "nix develop --command ./bin/test"
