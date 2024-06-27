@@ -8,4 +8,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: cachix/install-nix-action@v27
-    - run: nix flake check
+
+    - name: Clojure tests
+      run: "nix develop --command ./bin/test"
