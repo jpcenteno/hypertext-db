@@ -157,8 +157,9 @@
 (s/fdef add-node-from-vault-file
   :args (s/cat :graph ::t :vault-file ::vault-file/t)
   :ret  ::t
-  :fn   #(contains-node? (:ret %) (-> % :args :vault-file ::vault-file/id)))
+  :fn   #(let [arg-vault-file (-> % :args :vault-file)
+               ret-node       (-> % :ret (get-node (::vault-file/id arg-vault-file)))]
+           (= (node/vault-file-> arg-vault-file) ret-node)))
 (defn add-node-from-vault-file
   [graph vault-file]
-  (conj-node graph
-             (node/vault-file-> vault-file)))
+  (conj-node graph (node/vault-file-> vault-file)))
