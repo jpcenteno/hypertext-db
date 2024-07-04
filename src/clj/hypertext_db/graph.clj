@@ -153,3 +153,11 @@
         (disj-node node)
         (assoc-in [::nodes id] node)
         (update ::backlinks backlinks/add-from-node node))))
+
+(s/fdef add-node-from-vault-file
+  :args (s/cat :graph ::t :vault-file ::vault-file/t)
+  :ret  ::t)
+(defn add-node-from-vault-file
+  [graph vault-file]
+  (conj-node graph
+             (node/vault-file-> vault-file)))
