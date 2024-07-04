@@ -1,6 +1,7 @@
 (ns hypertext-db.graph-test
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
+            [clojure.spec.gen.alpha  :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test            :refer [deftest is testing]]
@@ -342,3 +343,20 @@
              node' (fixtures/node {::vault-file/id (node/id node)})]
          (= graph
             (-> graph (graph/conj-node node) (graph/disj-node node')))))))
+
+(deftest test-add-node-from-vault-file
+
+  (testing "When applied to an empty graph and a blank file, it returns a graph with a new node"
+    (is (let [vault         (first (gen/sample (s/gen ::vault/t) 1))
+              input-graph   (graph/vault-> vault)
+              vault-file    (first (gen/sample (s/gen ::vault-file/t) 1))
+              expected-id   (::vault-file/id vault-file)
+              result        (graph/add-node-from-vault-file input-graph vault-file)]
+          (testing "increasing the node count"
+            (is (= (inc (graph/node-count input-graph))
+                   (graph/node-count result))))
+          (testing "with the correct id"
+            (is (graph/contains-node? result expected-id)))
+          (testing "equal to the result applying node/vault-file-> to the input"
+            (is (= (node/vault-file-> vault-file)
+                   (graph/get-node result expected-id))))))))
