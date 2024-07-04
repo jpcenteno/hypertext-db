@@ -69,6 +69,32 @@
                   every-backlink-has-its-mirroring-link?))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Observers                                                              ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef node-count
+  :args (s/cat :graph ::t)
+  :ret (s/and integer? (partial <= 0)))
+(defn node-count
+  "Returns the number of nodes in the graph"
+  [graph]
+  (-> graph ::nodes count))
+
+(s/fdef contains-node?
+  :args (s/cat :graph ::t :node-id ::vault-file/id)
+  :ret boolean?)
+(defn contains-node?
+  [graph node-id]
+  (contains? (::nodes graph) node-id))
+
+(s/fdef get-node
+  :args (s/cat :graph ::t :id ::vault-file/id)
+  :ret  (s/nilable ::node/t))
+(defn get-node
+  [graph node-id]
+  (get-in graph [::nodes node-id]))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Constructor                                                            ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
