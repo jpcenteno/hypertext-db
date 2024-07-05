@@ -16,6 +16,8 @@
 (s/def ::nodes (s/and (s/map-of ::vault-file/id ::node/t)
                       (s/every key-equals-node-id?)))
 
+(s/def ::parsers (s/coll-of fn? :kind sequential?))
+
 ;; Backlinks exists to keep track of links to nodes that are not in the graph
 ;; yet or do not exist.
 (s/def ::backlinks ::backlinks/t)
@@ -64,7 +66,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/def ::t (s/and ::vault/t
-                  (s/keys :req [::nodes ::backlinks])
+                  (s/keys :req [::nodes ::backlinks ::parsers])
                   every-link-has-its-mirroring-backlink?
                   every-backlink-has-its-mirroring-link?))
 
@@ -108,7 +110,8 @@
   [vault]
   (-> vault
       (assoc ::nodes {})
-      (assoc ::backlinks {})))
+      (assoc ::backlinks {})
+      (assoc ::parsers [])))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Node operations                                                        ║
