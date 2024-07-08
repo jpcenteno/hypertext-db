@@ -9,7 +9,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (defn- file? [x]
-  (and #(instance? File %) #(.isDirectory %)))
+  (instance? File x))
 
 (s/def ::dir (s/and #(instance? File %)
                     #(.isDirectory %)))
