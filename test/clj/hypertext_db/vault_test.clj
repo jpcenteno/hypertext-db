@@ -4,7 +4,9 @@
             [hypertext-db.test.fixtures :as fixtures]
             [hypertext-db.vault :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
-            [clojure.spec.alpha :as s])
+            [clojure.spec.alpha :as s]
+            [clojure.spec.gen.alpha :as gen]
+            [pathetic.core :as path])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -54,3 +56,11 @@
             _     (doto (File. tmp/dir "firm-popular-carpet-tree")
                     (.mkdir))]
         (is (empty? (vault/list-vault-files vault)))))))
+
+(deftest test-slurp-vault-file
+  (testing "Reads content from a vault file"
+    (is (let [vault      (fixtures/vault)
+              vault-file (fixtures/vault-file)
+              file         (File. (::vault/dir vault) (-> vault-file ::vault-file/id str))]
+          (spit file "Some text")
+          (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
