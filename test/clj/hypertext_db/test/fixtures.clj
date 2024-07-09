@@ -84,3 +84,9 @@
          (-> node
              (update ::node/links     disj id)
              (update ::node/backlinks disj id)))))
+
+(s/fdef vault :ret ::vault/t)
+(defn vault
+  "Generates a test vault with an existing temporary directory."
+  []
+  (generate-one ::vault/t))
