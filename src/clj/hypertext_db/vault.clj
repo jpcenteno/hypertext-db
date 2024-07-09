@@ -54,6 +54,7 @@
   :args (s/cat :vault ::t :vault-file ::vault-file/t)
   :ret string?)
 (defn slurp-vault-file
+  "Opens a `vault-file` and returns a string with it's contents."
   [vault vault-file]
   (let [base (::dir vault)
         relative (-> vault-file ::vault-file/id str)]
