@@ -43,14 +43,3 @@
   "Returns the node id"
   [node]
   (::vault-file/id node))
-
-(s/fdef ->links
-  :args (s/cat :node ::t)
-  :ret  (s/coll-of ::link/t)
-  :fn   (s/and #(= (-> % :ret count) (-> % :args :node ::links count))
-               #(every? (fn [[from _]] (= from (-> % :args :node ::vault-file/id))) (:ret %))
-               #(every? (fn [[_ to]] (contains? (-> % :args :node ::links) to)) (:ret %))))
-(defn ->links
-  [node]
-  (map (fn [to] [(::vault-file/id node) to])
-       (::links node)))
