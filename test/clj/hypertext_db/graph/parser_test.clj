@@ -5,7 +5,7 @@
             [hypertext-db.graph.node                              :as node]
             [hypertext-db.graph.parser                            :as parser]
             [hypertext-db.test.fixtures                           :as fixtures]
-            [hypertext-db.test.node-parsers.link-list-node-parser :as test-parser]
+            [hypertext-db.test.simple-node-parser                 :as simple-parser]
             [hypertext-db.vault.vault-file                        :as vault-file])
   (:import (java.io File)))
 
@@ -21,8 +21,8 @@
     (is (let [vault           (fixtures/vault)
               vault-file-cant (fixtures/vault-file)
               links           #{(File. "link-1.md") (File. "link-2.png")}
-              vault-file-can  (test-parser/create-vault-file vault links)
-              parsers         [test-parser/parser]]
+              vault-file-can  (simple-parser/create-vault-file vault links)
+              parsers         [simple-parser/parser]]
 
           (testing "And a `vault-file` that the parser CAN'T parse"
             (testing "it returns the same value as `node/vault-file->`"
@@ -33,7 +33,7 @@
             (is (let [result (parser/parse parsers vault-file-can vault)]
 
                   (testing "it returns the same value as the parser's `::parser/parse-fn`"
-                    (is (= ((::parser/parse-fn test-parser/parser) vault-file-can vault)
+                    (is (= ((::parser/parse-fn simple-parser/parser) vault-file-can vault)
                            result)))
 
                   (testing "with all the links passed to the fixture"
