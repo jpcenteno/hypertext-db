@@ -245,7 +245,7 @@
             ;;
             ;; Which is a subset from the graph represented by
             ;; `::graph/nodes`.
-            (let [graph (update graph ::graph/backlinks backlinks/remove node-a-id node-b-id)]
+            (let [graph (update graph ::graph/backlinks backlinks/remove-link node-a-id node-b-id)]
               (is (s/valid? ::graph/t graph)))))))))
 
 (deftest vault->

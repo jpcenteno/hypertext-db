@@ -85,7 +85,7 @@
          node      (-> :args :node)]
      (f ret backlinks node)))
 
-(s/fdef remove
+(s/fdef remove-link
   :args (s/cat :backlinks ::t :from ::vault-file/id :to ::vault-file/id)
   :ret  ::t
   :fn   (s/or :contained     (s/and
@@ -95,7 +95,7 @@
                               (link-op-invariant-fn (fn [backlinks from to _ret] (not (links? backlinks from to))))
                               (link-op-invariant-fn (fn [backlinks _from _to ret] (= ret backlinks))))))
 
-(defn remove
+(defn remove-link
   [bs id-from id-to]
   (let [set' (disj (get bs id-to) id-from)]
     (if (empty? set')
