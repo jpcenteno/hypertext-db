@@ -50,12 +50,19 @@
        (map (partial stat-file vault))
        set))
 
+(s/fdef vault-file->java-file
+  :args (s/cat :vault ::t :vault-file ::vault-file/t)
+  :ret  file?)
+(defn- vault-file->java-file
+  [vault vault-file]
+  (let [base (::dir vault)
+        relative (-> vault-file ::vault-file/id str)]
+    (File. base relative)))
+
 (s/fdef slurp-vault-file
   :args (s/cat :vault ::t :vault-file ::vault-file/t)
   :ret string?)
 (defn slurp-vault-file
   "Opens a `vault-file` and returns a string with it's contents."
   [vault vault-file]
-  (let [base (::dir vault)
-        relative (-> vault-file ::vault-file/id str)]
-    (slurp (File. base relative))))
+  (slurp (vault-file->java-file vault vault-file)))
