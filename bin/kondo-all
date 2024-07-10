@@ -1,0 +1,6 @@
+#! /bin/sh
+set -eu
+
+## Execute clj-kondo with all the pertinent source files pre-specified.
+
+exec clj -M:clj-kondo --lint ./*.edn src test "$@"
