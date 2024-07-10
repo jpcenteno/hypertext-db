@@ -28,4 +28,4 @@ jobs:
       run: "nix develop --command clj -M:fmt/check"
 
     - name: Run clj-kondo
-      run: "nix develop --command ./bin/kondo-all"
+      run: nix develop --command ./bin/kondo-all --config '{:output {:pattern "::{{level}} file={{filename}},line={{row}},col={{col}}::{{message}}"}}'
