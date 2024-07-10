@@ -12,7 +12,7 @@
             [hypertext-db.vault.vault-file :as vault-file]
             [hypertext-db.graph.backlinks-impl :as backlinks]
             [hypertext-db.test.fixtures :as fixtures]
-            [hypertext-db.test.node-parsers.link-list-node-parser :as test-parser])
+            [hypertext-db.test.simple-node-parser :as simple-parser])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -364,11 +364,11 @@
                    (graph/get-node result expected-id)))))))
 
   (testing "Provided a graph with a simple custom parser"
-    (is (let [graph           (-> (fixtures/vault) graph/vault-> (graph/set-parsers [test-parser/parser]))]
+    (is (let [graph           (-> (fixtures/vault) graph/vault-> (graph/set-parsers [simple-parser/parser]))]
 
           (testing "and a `::vault-file/t` that the parser CAN parse"
             (is (let [links       #{(File. "foo.md") (File. "bar.png")}
-                      vault-file  (test-parser/create-vault-file graph links)
+                      vault-file  (simple-parser/create-vault-file graph links)
                       id          (::vault-file/id vault-file)
                       graph-after (graph/add-node-from-vault-file graph vault-file)]
 

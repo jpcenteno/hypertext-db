@@ -1,4 +1,4 @@
-(ns hypertext-db.test.node-parsers.link-list-node-parser
+(ns hypertext-db.test.simple-node-parser
   (:require [clojure.spec.alpha            :as s]
             [clojure.string                :as str]
             [hypertext-db.graph.node       :as node]
