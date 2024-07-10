@@ -54,11 +54,3 @@
   [node]
   (map (fn [to] [(::vault-file/id node) to])
        (::links node)))
-
-(s/fdef links?
-  :args (s/cat :node ::t :id ::vault-file/id)
-  :ret  boolean?)
-(defn links?
-  "Returns true if the `node` links to the provided `id`."
-  [node id]
-  (contains? (::links node) id))
