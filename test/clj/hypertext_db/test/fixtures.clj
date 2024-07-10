@@ -87,6 +87,6 @@
 
 (s/fdef vault :ret ::vault/t)
 (defn vault
-  "Generates a test vault with an existing temporary directory."
+  "Generates a vault with an existing temporary directory for testing purposes."
   []
   (generate-one ::vault/t))
