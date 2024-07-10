@@ -2,7 +2,6 @@
   (:require [clojure.spec.alpha      :as s]
             [clojure.spec.gen.alpha  :as gen]
             [pathetic.core           :as path]
-            [hypertext-db.graph            :as graph]
             [hypertext-db.graph.node       :as node]
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file])
