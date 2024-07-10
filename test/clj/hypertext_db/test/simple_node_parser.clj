@@ -12,7 +12,7 @@
 ; ║ Implementation internals                                               ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(def extension ^:private ".link-list")
+(def ^:private extension  ".link-list")
 
 (s/fdef can-parse?
   :args (s/cat :vault-file ::vault-file/t)
