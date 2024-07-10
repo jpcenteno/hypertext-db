@@ -14,7 +14,7 @@
   "Is `x` a `java.io.File` instance containing a relative path?"
   [x]
   (and (instance? java.io.File x)
-       (not (.isAbsolute x))
+           (not (.isAbsolute x))
        (not= (java.io.File. "") x)))
 
 (s/def ::id relative-file?)
