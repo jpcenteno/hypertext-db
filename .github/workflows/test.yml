@@ -23,3 +23,6 @@ jobs:
 
     - name: Clojure tests
       run: "nix develop --command ./bin/test"
+
+    - name: Check formatting
+      run: "nix develop --command clj -M:fmt/check"
