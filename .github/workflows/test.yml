@@ -26,3 +26,6 @@ jobs:
 
     - name: Check formatting
       run: "nix develop --command clj -M:fmt/check"
+
+    - name: Run clj-kondo
+      run: "nix develop --command ./bin/kondo-all"
