@@ -1,7 +1,6 @@
 (ns hypertext-db.graph.node
   "This namespace defines a model for graph nodes."
   (:require [clojure.spec.alpha      :as s]
-            [hypertext-db.graph.link       :as link]
             [hypertext-db.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
