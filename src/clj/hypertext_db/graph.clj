@@ -2,6 +2,7 @@
   (:require [clojure.set             :as set]
             [clojure.spec.alpha      :as s]
             [hypertext-db.graph.node       :as node]
+            [hypertext-db.graph.parser         :as parser]
             [hypertext-db.graph.backlinks-impl :as backlinks]
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file]))
@@ -16,7 +17,7 @@
 (s/def ::nodes (s/and (s/map-of ::vault-file/id ::node/t)
                       (s/every key-equals-node-id?)))
 
-(s/def ::parsers (s/coll-of fn? :kind sequential?))
+(s/def ::parser-chain ::parser/parser-chain)
 
 ;; Backlinks exists to keep track of links to nodes that are not in the graph
 ;; yet or do not exist.
@@ -66,7 +67,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/def ::t (s/and ::vault/t
-                  (s/keys :req [::nodes ::backlinks ::parsers])
+                  (s/keys :req [::nodes ::backlinks ::parser-chain])
                   every-link-has-its-mirroring-backlink?
                   every-backlink-has-its-mirroring-link?))
 
@@ -111,7 +112,14 @@
   (-> vault
       (assoc ::nodes {})
       (assoc ::backlinks {})
-      (assoc ::parsers [])))
+      (assoc ::parser-chain [])))
+
+(s/fdef set-parsers
+  :args (s/cat :graph ::t :parsers ::parser-chain)
+  :ret  ::t)
+(defn set-parsers
+  [graph parsers]
+  (assoc graph ::parser-chain parsers))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Node operations                                                        ║
@@ -159,10 +167,7 @@
 
 (s/fdef add-node-from-vault-file
   :args (s/cat :graph ::t :vault-file ::vault-file/t)
-  :ret  ::t
-  :fn   #(let [arg-vault-file (-> % :args :vault-file)
-               ret-node       (-> % :ret (get-node (::vault-file/id arg-vault-file)))]
-           (= (node/vault-file-> arg-vault-file) ret-node)))
+  :ret  ::t)
 (defn add-node-from-vault-file
   [graph vault-file]
-  (conj-node graph (node/vault-file-> vault-file)))
+  (conj-node graph (parser/parse (::parser-chain graph) vault-file graph)))

@@ -11,7 +11,9 @@
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
             [hypertext-db.graph.backlinks-impl :as backlinks]
-            [hypertext-db.test.fixtures :as fixtures]))
+            [hypertext-db.test.fixtures :as fixtures]
+            [hypertext-db.test.node-parsers.link-list-node-parser :as test-parser])
+  (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Test data                                                              ║
@@ -359,4 +361,20 @@
             (is (graph/contains-node? result expected-id)))
           (testing "equal to the result applying node/vault-file-> to the input"
             (is (= (node/vault-file-> vault-file)
-                   (graph/get-node result expected-id))))))))
+                   (graph/get-node result expected-id)))))))
+
+  (testing "Provided a graph with a simple custom parser"
+    (is (let [graph           (-> (fixtures/vault) graph/vault-> (graph/set-parsers [test-parser/parser]))]
+
+          (testing "and a `::vault-file/t` that the parser CAN parse"
+            (is (let [links       #{(File. "foo.md") (File. "bar.png")}
+                      vault-file  (test-parser/create-vault-file graph links)
+                      id          (::vault-file/id vault-file)
+                      graph-after (graph/add-node-from-vault-file graph vault-file)]
+
+                  (testing "Returns a graph containing a node"
+                    (testing  "with the same id"
+                      (is (graph/contains-node? graph-after id)))
+
+                    (testing "with all the links passed to the fixture"
+                      (is (= links (-> graph-after (graph/get-node id) ::node/links))))))))))))
