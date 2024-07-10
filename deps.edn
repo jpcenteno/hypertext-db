@@ -22,4 +22,7 @@
                        :main-opts ["-m" "cljfmt.main" "check"]}
 
            :fmt/fix {:extra-deps {cljfmt/cljfmt {:mvn/version "0.9.2"}}
-                     :main-opts ["-m" "cljfmt.main" "fix"]}}}
+                     :main-opts ["-m" "cljfmt.main" "fix"]}
+
+           :clj-kondo {:extra-deps {clj-kondo/clj-kondo {:mvn/version "2024.05.24"}}
+                       :main-opts ["-m" "clj-kondo.main"]}}}
