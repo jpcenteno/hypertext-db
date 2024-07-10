@@ -1,12 +1,9 @@
 (ns hypertext-db.graph.parser-test
   (:require [clojure.test                                         :refer [deftest is testing]]
-            [clojure.spec.alpha                                   :as s]
-            [clojure.spec.gen.alpha                               :as gen]
             [hypertext-db.graph.node                              :as node]
             [hypertext-db.graph.parser                            :as parser]
             [hypertext-db.test.fixtures                           :as fixtures]
-            [hypertext-db.test.simple-node-parser                 :as simple-parser]
-            [hypertext-db.vault.vault-file                        :as vault-file])
+            [hypertext-db.test.simple-node-parser                 :as simple-parser])
   (:import (java.io File)))
 
 (deftest test-parse
