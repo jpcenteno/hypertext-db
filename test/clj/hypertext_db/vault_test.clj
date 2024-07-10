@@ -4,9 +4,7 @@
             [hypertext-db.test.fixtures :as fixtures]
             [hypertext-db.vault :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
-            [clojure.spec.alpha :as s]
-            [clojure.spec.gen.alpha :as gen]
-            [pathetic.core :as path])
+            [clojure.spec.alpha :as s])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
