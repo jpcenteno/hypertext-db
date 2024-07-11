@@ -27,26 +27,26 @@
     (is
      (tmp/with-tmp-dir
        (let [vault        (vault/dir-> tmp/dir)
-             vault-file-1 (fixtures/vault-file-that-exists tmp/dir {::vault-file/id (File. "filename-1.md")})
-             vault-file-2 (fixtures/vault-file-that-exists tmp/dir {::vault-file/id (File. "filename-2.md")})
+             vault-file-1 (fixtures/vault-file-that-exists vault {::vault-file/id (File. "filename-1.md")})
+             vault-file-2 (fixtures/vault-file-that-exists vault {::vault-file/id (File. "filename-2.md")})
              result       (vault/list-vault-files vault)]
          (is (= 2 (count result)))
          (is (contains? result vault-file-1))
          (is (contains? result vault-file-2))))))
 
   (testing "Lists files under directories"
-    (is (tmp/with-tmp-dir
-          (let [attrs      {::vault-file/id (File. "subdir/test-file-in-subdirectory.md")}
-                vault-file (fixtures/vault-file-that-exists tmp/dir attrs)
-                result     (-> tmp/dir vault/dir-> vault/list-vault-files)]
-            (contains? result vault-file)))))
+    (tmp/with-tmp-dir
+      (let [vault      (fixtures/vault)
+            attrs      {::vault-file/id (File. "subdir/test-file-in-subdirectory.md")}
+            vault-file (fixtures/vault-file-that-exists vault attrs)]
+        (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Lists hidden filenames"
     (is (tmp/with-tmp-dir
-          (let [attrs    {::vault-file/id (File. ".im-a-hidden-test-file.exe")}
-                expected (fixtures/vault-file-that-exists tmp/dir attrs)
-                result   (-> tmp/dir vault/dir-> vault/list-vault-files)]
-            (is (contains? result expected))))))
+          (let [vault      (fixtures/vault)
+                attrs      {::vault-file/id (File. ".im-a-hidden-test-file.exe")}
+                vault-file (fixtures/vault-file-that-exists vault attrs)]
+            (is (contains? (vault/list-vault-files vault) vault-file))))))
 
   (testing "Ignores directories"
     (tmp/with-tmp-dir
