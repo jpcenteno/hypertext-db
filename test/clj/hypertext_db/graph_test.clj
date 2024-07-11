@@ -378,3 +378,10 @@
 
                     (testing "with all the links passed to the fixture"
                       (is (= links (-> graph-after (graph/get-node id) ::node/links))))))))))))
+
+(deftest test-batch-sync-graph-with-vault
+  (testing "Starting from an emtpy graph,"
+    (testing "it returns an equal value while the vault is still empty"
+      (let [empty-graph (-> (fixtures/vault) graph/vault->)]
+        (is (= empty-graph
+               (graph/batch-sync-graph-with-vault empty-graph)))))))
