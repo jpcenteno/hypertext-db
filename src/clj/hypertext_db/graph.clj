@@ -172,6 +172,11 @@
   [graph vault-file]
   (conj-node graph (parser/parse (::parser-chain graph) vault-file graph)))
 
+(s/fdef batch-sync-graph-with-vault
+  ;; Note that it's impossible to write a post-condition (`:fn`) for this
+  ;; function due to it's non-deterministical and best-effort behavior.
+  :args (s/cat :graph ::t)
+  :ret  ::t)
 (defn batch-sync-graph-with-vault
   "Batch syncs the graph with the contents of its associated vault.
 
