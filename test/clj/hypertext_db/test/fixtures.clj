@@ -58,7 +58,6 @@
         rel-path  (::vault-file/id vault-file)]
     (File. base-path (str rel-path))))
 
-(s/fdef id :ret ::vault-file/id)
 (defn id
   ([]  (generate-one ::vault-file/id))
   ([s] (File. s)))
@@ -92,6 +91,8 @@
        (.setLastModified (::vault-file/last-modified-ms vf)))
      vf)))
 
+;;;; hypertext-db.graph.node
+
 (s/fdef node :ret ::node/t)
 (defn node
   "Generates a random `::node/t`."
@@ -104,13 +105,15 @@
              (update ::node/links     disj id)
              (update ::node/backlinks disj id)))))
 
+;;;; hypertext-db.vault
+
 (s/fdef vault :ret ::vault/t)
 (defn vault
   "Generates a vault with an existing temporary directory for testing purposes."
   []
   (generate-one ::vault/t))
 
-;;;; `hypertext-db.graph`
+;;;; hypertext-db.graph
 
 (s/fdef graph-empty
   :args (s/cat)
