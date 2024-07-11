@@ -403,9 +403,8 @@
         (is (graph/contains-node? graph-after (::vault-file/id vault-file))))))
 
   (testing "Adds more nodes to a graph that already has a synced node"
-    (let [graph-initial (fixtures/graph-empty)
-          vault-file-1  (fixtures/vault-file-that-exists graph-initial)
-          graph-initial (graph/batch-sync-graph-with-vault graph-initial)
+    (let [graph-initial (fixtures/graph-with-nodes-that-exist-in-vault)
+          vault-file-1  (-> graph-initial ::graph/nodes vals first)
           vault-file-2  (fixtures/vault-file-that-exists graph-initial)
           graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
       ;; Adds new node.
@@ -416,22 +415,16 @@
       (is (= 2 (graph/node-count graph-after)))))
 
   (testing "This function behaves idempotently when storage is unchanged"
-    (let [graph-initial (fixtures/graph-empty)
-          _vault-file   (fixtures/vault-file-that-exists graph-initial)
-          graph-initial (graph/batch-sync-graph-with-vault graph-initial)]
+    (let [graph-initial (fixtures/graph-with-nodes-that-exist-in-vault)]
       (is (= graph-initial
              (graph/batch-sync-graph-with-vault graph-initial)))))
 
   (testing "Updates nodes that have been changed sibatch-sync-graph-with-vaultnce the last sync"
-    (let [graph-initial (fixtures/graph-empty)
-          vault-file-initial  (fixtures/vault-file-that-exists
-                               graph-initial
-                               {::vault-file/last-modified-ms 0})
-          graph-initial (graph/batch-sync-graph-with-vault graph-initial)
-
-          vault-file-after  (fixtures/vault-file-that-exists
-                             graph-initial
-                             (assoc vault-file-initial ::vault-file/last-modified-ms 1))
+    (let [graph-initial      (fixtures/graph-with-nodes-that-exist-in-vault)
+          vault-file-initial (-> graph-initial ::graph/nodes vals first)
+          vault-file-after   (fixtures/vault-file-that-exists
+                              graph-initial
+                              (assoc vault-file-initial ::vault-file/last-modified-ms 1))
           graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
       ;; The resulting graph now contains an updated version of the original
       ;; vault-file.

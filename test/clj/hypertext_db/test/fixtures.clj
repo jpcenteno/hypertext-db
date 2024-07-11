@@ -121,3 +121,10 @@
   :fn  #(zero? (graph/node-count (:ret %))))
 (defn graph-empty []
   (graph/vault-> (vault)))
+
+(defn graph-with-nodes-that-exist-in-vault
+  "Returns a [[hypertext-db.graph]] which contains nodes that exist in its vault."
+  []
+  (let [graph (graph-empty)]
+    (vault-file-that-exists graph)
+    (graph/batch-sync-graph-with-vault graph)))
