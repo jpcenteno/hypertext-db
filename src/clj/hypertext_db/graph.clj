@@ -188,4 +188,7 @@
   condition, it will still return a good-enough approximation of the desired
   result."
   [graph]
-  graph)
+  ;; Here we leverage the fact that `reduce` performs **eager** evaluation.
+  (reduce add-node-from-vault-file
+          graph
+          (vault/list-vault-files graph)))

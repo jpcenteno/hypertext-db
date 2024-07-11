@@ -384,4 +384,10 @@
     (testing "it returns an equal value while the vault is still empty"
       (let [empty-graph (fixtures/graph-empty)]
         (is (= empty-graph
-               (graph/batch-sync-graph-with-vault empty-graph)))))))
+               (graph/batch-sync-graph-with-vault empty-graph)))))
+    (testing "Adds a new file from the vault using the fallback parser"
+      (let [empty-graph (fixtures/graph-empty)
+            vault-file  (fixtures/vault-file-that-exists empty-graph)
+            graph-after (graph/batch-sync-graph-with-vault empty-graph)]
+        (is (= 1 (graph/node-count graph-after)))
+        (is (graph/contains-node? graph-after (::vault-file/id vault-file)))))))
