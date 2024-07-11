@@ -382,6 +382,6 @@
 (deftest test-batch-sync-graph-with-vault
   (testing "Starting from an emtpy graph,"
     (testing "it returns an equal value while the vault is still empty"
-      (let [empty-graph (-> (fixtures/vault) graph/vault->)]
+      (let [empty-graph (fixtures/graph-empty)]
         (is (= empty-graph
                (graph/batch-sync-graph-with-vault empty-graph)))))))

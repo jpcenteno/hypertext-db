@@ -4,7 +4,8 @@
             [pathetic.core           :as path]
             [hypertext-db.graph.node       :as node]
             [hypertext-db.vault            :as vault]
-            [hypertext-db.vault.vault-file :as vault-file])
+            [hypertext-db.vault.vault-file :as vault-file]
+            [hypertext-db.graph :as graph])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -108,3 +109,12 @@
   "Generates a vault with an existing temporary directory for testing purposes."
   []
   (generate-one ::vault/t))
+
+;;;; `hypertext-db.graph`
+
+(s/fdef graph-empty
+  :args (s/cat)
+  :ret ::graph/t
+  :fn  #(zero? (graph/node-count (:ret %))))
+(defn graph-empty []
+  (graph/vault-> (vault)))
