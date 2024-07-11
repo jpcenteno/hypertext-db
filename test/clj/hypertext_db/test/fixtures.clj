@@ -46,6 +46,17 @@
   [spec]
   (first (gen/sample (s/gen spec) 1)))
 
+;;;; hypertext-db.vault.vault-file
+
+(s/fdef vault-and-vault-file->java-file
+  :args (s/cat :vault ::vault/t :vault-file ::vault-file/t)
+  :ret  #(instance? File %))
+(defn- vault-and-vault-file->java-file
+  [vault vault-file]
+  (let [base-path (::vault/dir vault)
+        rel-path  (::vault-file/id vault-file)]
+    (File. base-path (str rel-path))))
+
 (s/fdef id :ret ::vault-file/id)
 (defn id
   ([]  (generate-one ::vault-file/id))
@@ -59,13 +70,21 @@
    (merge (generate-one ::vault-file/t)
           attrs)))
 
+(s/fdef vault-file-that-exists
+  :args (s/or :unary (s/cat :vault ::vault/t)
+              :binary (s/cat :vault ::vault/t :attrs map?))
+  :ret ::vault-file/t
+  :fn  #(let [vault      (-> % :args second :vault)
+              vault-file (-> % :ret)
+              file       (vault-and-vault-file->java-file vault vault-file)]
+          (.exists file)))
 (defn vault-file-that-exists
-  ([parent-directory]
-   (vault-file-that-exists parent-directory {}))
-  ([parent-directory attrs]
+  ([vault]
+   (vault-file-that-exists vault {}))
+  ([vault attrs]
    (let [vf (vault-file attrs)
-         file (File. parent-directory (str (::vault-file/id vf)))]
-     (doto (File. (.getParent file))
+         file (vault-and-vault-file->java-file vault vf)]
+     (doto (.getParentFile file)
        (.mkdirs))
      (doto file
        (.createNewFile)
