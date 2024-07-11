@@ -174,7 +174,7 @@
 
 (defn batch-sync-graph-with-vault
   "Batch syncs the graph with the contents of its associated vault.
-    
+
   It takes a `::graph/t` as a parameter and reads its associated
   [[hypertext-db.vault]] backing storage to determine which nodes need to be
   updated or deleted. It returns an up-to-date version of the input
