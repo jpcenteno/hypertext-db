@@ -400,7 +400,16 @@
             vault-file  (fixtures/vault-file-that-exists empty-graph)
             graph-after (graph/batch-sync-graph-with-vault empty-graph)]
         (is (= 1 (graph/node-count graph-after)))
-        (is (graph/contains-node? graph-after (::vault-file/id vault-file))))))
+        (is (graph/contains-node? graph-after (::vault-file/id vault-file)))))
+
+    (testing "Adds many files from the vault using the fallback parser"
+      (let [empty-graph (fixtures/graph-empty)
+            vault-file-1  (fixtures/vault-file-that-exists empty-graph)
+            vault-file-2 (fixtures/vault-file-that-exists empty-graph)
+            graph-after (graph/batch-sync-graph-with-vault empty-graph)]
+        (is (= 2 (graph/node-count graph-after)))
+        (is (graph/contains-node? graph-after (::vault-file/id vault-file-1)))
+        (is (graph/contains-node? graph-after (::vault-file/id vault-file-2))))))
 
   (testing "Adds more nodes to a graph that already has a synced node"
     (let [graph-initial (fixtures/graph-with-nodes-that-exist-in-vault)
@@ -434,7 +443,6 @@
       (is (= (graph/node-count graph-initial) (graph/node-count graph-after)))))
 
   ;; FIXME Add a node using a custom parser
-  ;; FIXME Add many nodes
   ;; FIXME Remove a node
   ;; FIXME Remove many nodes
   ;; FIXME Adds and removes nodes
