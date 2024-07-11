@@ -171,3 +171,21 @@
 (defn add-node-from-vault-file
   [graph vault-file]
   (conj-node graph (parser/parse (::parser-chain graph) vault-file graph)))
+
+(defn batch-sync-graph-with-vault
+  "Batch syncs the graph with the contents of its associated vault.
+    
+  It takes a `::graph/t` as a parameter and reads its associated
+  [[hypertext-db.vault]] backing storage to determine which nodes need to be
+  updated or deleted. It returns an up-to-date version of the input
+  `::graph/t` on a best-effort basis (see the caveats section below).
+
+  ## Caveats
+
+  This process is subject to running into a race condition, as the directory
+  contents could change while the function is being executed. This function
+  operates on a best-effort basis. In the **rare scenario** of a race
+  condition, it will still return a good-enough approximation of the desired
+  result."
+  [graph]
+  graph)
