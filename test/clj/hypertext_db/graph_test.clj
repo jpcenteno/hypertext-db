@@ -379,15 +379,73 @@
                     (testing "with all the links passed to the fixture"
                       (is (= links (-> graph-after (graph/get-node id) ::node/links))))))))))))
 
+;; FIXME move this to a corresponding namespace.
+(s/fdef hash-map-subset?
+  :args (s/cat :m1 map? :m2 map?)
+  :ret  boolean?)
+(defn- hash-map-subset? [m1 m2]
+  (set/subset? (set m1) (set m2)))
+
 (deftest test-batch-sync-graph-with-vault
+
   (testing "Starting from an emtpy graph,"
+
     (testing "it returns an equal value while the vault is still empty"
       (let [empty-graph (fixtures/graph-empty)]
         (is (= empty-graph
                (graph/batch-sync-graph-with-vault empty-graph)))))
+
     (testing "Adds a new file from the vault using the fallback parser"
       (let [empty-graph (fixtures/graph-empty)
             vault-file  (fixtures/vault-file-that-exists empty-graph)
             graph-after (graph/batch-sync-graph-with-vault empty-graph)]
         (is (= 1 (graph/node-count graph-after)))
-        (is (graph/contains-node? graph-after (::vault-file/id vault-file)))))))
+        (is (graph/contains-node? graph-after (::vault-file/id vault-file))))))
+
+  (testing "Adds more nodes to a graph that already has a synced node"
+    (let [graph-initial (fixtures/graph-empty)
+          vault-file-1  (fixtures/vault-file-that-exists graph-initial)
+          graph-initial (graph/batch-sync-graph-with-vault graph-initial)
+          vault-file-2  (fixtures/vault-file-that-exists graph-initial)
+          graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
+      ;; Adds new node.
+      (is (graph/contains-node? graph-after (::vault-file/id vault-file-2)))
+      ;; Retains previous node.
+      (is (graph/contains-node? graph-after (::vault-file/id vault-file-1)))
+      ;; Doesn't add any other node.
+      (is (= 2 (graph/node-count graph-after)))))
+
+  (testing "This function behaves idempotently when storage is unchanged"
+    (let [graph-initial (fixtures/graph-empty)
+          _vault-file   (fixtures/vault-file-that-exists graph-initial)
+          graph-initial (graph/batch-sync-graph-with-vault graph-initial)]
+      (is (= graph-initial
+             (graph/batch-sync-graph-with-vault graph-initial)))))
+
+  (testing "Updates nodes that have been changed sibatch-sync-graph-with-vaultnce the last sync"
+    (let [graph-initial (fixtures/graph-empty)
+          vault-file-initial  (fixtures/vault-file-that-exists
+                               graph-initial
+                               {::vault-file/last-modified-ms 0})
+          graph-initial (graph/batch-sync-graph-with-vault graph-initial)
+
+          vault-file-after  (fixtures/vault-file-that-exists
+                             graph-initial
+                             (assoc vault-file-initial ::vault-file/last-modified-ms 1))
+          graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
+      ;; The resulting graph now contains an updated version of the original
+      ;; vault-file.
+      (is (hash-map-subset? vault-file-after
+                            (graph/get-node graph-after (::vault-file/id vault-file-initial))))
+      ;; Doesn't add any other node.
+      (is (= (graph/node-count graph-initial) (graph/node-count graph-after)))))
+
+  ;; FIXME Add a node using a custom parser
+  ;; FIXME Add many nodes
+  ;; FIXME Remove a node
+  ;; FIXME Remove many nodes
+  ;; FIXME Adds and removes nodes
+  ;; FIXME Adds and removes many nodes
+  ;; FIXME Adds, removes and updates nodes
+  ;; FIXME Adds, removes and updates many nodes
+  )
