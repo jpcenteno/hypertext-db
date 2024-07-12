@@ -423,12 +423,23 @@
       ;; Doesn't add any other node.
       (is (= 2 (graph/node-count graph-after)))))
 
+  (testing "Adds a new file using a custom parser"
+    (let [graph-pre       (graph/set-parsers (fixtures/graph-empty)  [simple-parser/parser])
+          vault-file-from (simple-parser/create-vault-file graph-pre #{(File. "to.png")})
+          graph-post      (graph/batch-sync-graph-with-vault graph-pre)]
+      (testing "Contains the vault file"
+        (is (graph/contains-node? graph-post (::vault-file/id vault-file-from))))
+      (testing "Has a link that was added by the custom parser"
+        (is (-> graph-post (graph/get-node (::vault-file/id vault-file-from)) ::node/links (contains? (File. "to.png")))))
+      (testing "Doesn't add any other node"
+        (is (= 1 (graph/node-count graph-post))))))
+
   (testing "This function behaves idempotently when storage is unchanged"
     (let [graph-initial (fixtures/graph-with-nodes-that-exist-in-vault)]
       (is (= graph-initial
              (graph/batch-sync-graph-with-vault graph-initial)))))
 
-  (testing "Updates nodes that have been changed sibatch-sync-graph-with-vaultnce the last sync"
+  (testing "Updates nodes that have been changed since the last sync"
     (let [graph-initial      (fixtures/graph-with-nodes-that-exist-in-vault)
           vault-file-initial (-> graph-initial ::graph/nodes vals first)
           vault-file-after   (fixtures/vault-file-that-exists
@@ -442,7 +453,6 @@
       ;; Doesn't add any other node.
       (is (= (graph/node-count graph-initial) (graph/node-count graph-after)))))
 
-  ;; FIXME Add a node using a custom parser
   ;; FIXME Remove a node
   ;; FIXME Remove many nodes
   ;; FIXME Adds and removes nodes
