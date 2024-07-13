@@ -453,10 +453,82 @@
       ;; Doesn't add any other node.
       (is (= (graph/node-count graph-initial) (graph/node-count graph-after)))))
 
-  ;; FIXME Remove a node
-  ;; FIXME Remove many nodes
-  ;; FIXME Adds and removes nodes
-  ;; FIXME Adds and removes many nodes
-  ;; FIXME Adds, removes and updates nodes
-  ;; FIXME Adds, removes and updates many nodes
-  )
+  (testing "Removes a node"
+    (let [graph-pre  (fixtures/graph-with-nodes-that-exist-in-vault)
+          vault-file (-> graph-pre ::graph/nodes vals first)
+          _          (doto (#'fixtures/vault-and-vault-file->java-file graph-pre vault-file)
+                       .delete)
+          graph-post (graph/batch-sync-graph-with-vault graph-pre)]
+      (testing "returning a graph without that node"
+        (is (not (graph/contains-node? graph-post (::vault-file/id vault-file)))))
+      (testing "without adding any other node"
+        (is (zero? (graph/node-count graph-post))))))
+
+  (testing "Starting from a synchronized graph with nodes,"
+    (let [vault      (fixtures/vault)
+          file-1     (fixtures/vault-file-that-exists vault)
+          file-2     (fixtures/vault-file-that-exists vault)
+          file-3     (fixtures/vault-file-that-exists vault)
+          graph-pre  (-> vault graph/vault-> graph/batch-sync-graph-with-vault)]
+      (testing "deleting more than one file,"
+        (fixtures/vault-file-delete graph-pre file-1)
+        (fixtures/vault-file-delete graph-pre file-2)
+        (testing "and then evaluating `batch-sync-graph-with-vault` returns a graph:"
+          (let [graph-post (graph/batch-sync-graph-with-vault graph-pre)]
+            (testing "without the deleted nodes"
+              (testing "(file-1)"
+                (is (not (graph/contains-node? graph-post (::vault-file/id file-1)))))
+              (testing "(file-2)"
+                (is (not (graph/contains-node? graph-post (::vault-file/id file-2))))))
+            (testing "that preserves the non-deleted nodes"
+              (is (graph/contains-node? graph-post (::vault-file/id file-3)))))))))
+
+  (testing "Creates and deletes multiple files:"
+    (let [vault     (fixtures/vault)
+          file-1    (fixtures/vault-file-that-exists vault)
+          file-2    (fixtures/vault-file-that-exists vault)
+          file-3    (fixtures/vault-file-that-exists vault)
+          file-4    (fixtures/vault-file-that-exists vault)
+          graph-pre (-> vault graph/vault-> graph/batch-sync-graph-with-vault)
+          file-5    (fixtures/vault-file-that-exists vault)
+          file-6    (fixtures/vault-file-that-exists vault)]
+      (fixtures/vault-file-delete graph-pre file-1)
+      (fixtures/vault-file-delete graph-pre file-2)
+      (let [graph-post (graph/batch-sync-graph-with-vault graph-pre)]
+
+        (testing "Removes deleted files from graph"
+          (testing "(file-1)"
+            (is (not (graph/contains-node? graph-post (::vault-file/id file-1)))))
+          (testing "(file-2)"
+            (is (not (graph/contains-node? graph-post (::vault-file/id file-2))))))
+
+        (testing "Keeps unmodified file's nodes unchanged"
+          (testing "(file-3)"
+            (is (= (graph/get-node graph-pre  (::vault-file/id file-3))
+                   (graph/get-node graph-post  (::vault-file/id file-3)))))
+          (testing "(file-4)"
+            (is (= (graph/get-node graph-pre  (::vault-file/id file-4))
+                   (graph/get-node graph-post  (::vault-file/id file-4))))))
+
+        (testing "Adds nodes for new files"
+          (testing "(file-5)"
+            (is (graph/contains-node? graph-post (::vault-file/id file-5))))
+          (testing "(file-6)"
+            (is (graph/contains-node? graph-post (::vault-file/id file-6)))))
+
+        (testing "Does not add any other node to the graph."
+          (is (= 4 (graph/node-count graph-post)))))))
+
+  (testing "After updating a node's file"
+    (let [vault      (fixtures/vault)
+          file-pre   (fixtures/vault-file-that-exists vault)
+          graph-pre  (-> vault graph/vault-> graph/batch-sync-graph-with-vault)
+          file-post  (fixtures/vault-file-that-exists vault file-pre)
+          graph-post (graph/batch-sync-graph-with-vault graph-pre)]
+      (testing "It changes the associated node to the latest version"
+        (is (hash-map-subset?
+             file-post
+             (graph/get-node graph-post
+                             (::vault-file/id file-pre)))))
+      (testing "It does not add any other node"
+        (is (= 1 (graph/node-count graph-post)))))))

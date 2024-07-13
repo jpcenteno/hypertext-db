@@ -130,22 +130,82 @@
          {:keys [graph node]} args]
      (f ret graph node)))
 
+(defn- pc-every-other-key-remains-unchanged
+  "Post-condition which checks that a function can only alter certain keys.
+
+  The function under test must take a `hash-map` as argument and and return an
+  altered version of it. This post-condition asserts that every key other than
+  those specified at `allow-listed-ks` remain unchanged.
+
+  ## Parameters
+
+  - `get-input-fn`: A `[[ifn?]]` that when applied to 
+  "
+  [get-input-fn allow-listed-ks]
+  (fn [m]
+    (let [dissoc-allow-listed-keys #(apply dissoc % allow-listed-ks)
+          input-graph              (get-input-fn (:args m))
+          output-graph             (:ret m)]
+      (= (dissoc-allow-listed-keys input-graph)
+         (dissoc-allow-listed-keys output-graph)))))
+
+(defn- pc-does-not-contain-node
+  [get-node-fn]
+  (fn [{:keys [args ret]}]
+    (not (contains-node? ret
+                         (-> args get-node-fn node/id)))))
+
+(defn- pc-every-other-node-remains-unchanged
+  [get-graph-fn get-node-fn]
+  (fn [m]
+    (let [node-id-arg (-> m :args get-node-fn ::vault-file/id)
+          nodes-arg   (-> m :args get-graph-fn ::nodes)
+          nodes-ret   (-> m :ret ::nodes)]
+      (= nodes-ret
+         (dissoc nodes-arg node-id-arg)))))
+
+(s/fdef disj-node*
+  :args (s/or :1-ary (s/cat :graph ::t)
+              :2-ary (s/and (s/cat :graph ::t :node ::node/t)
+                            #(= (:node %)
+                                (get-node (:graph %)
+                                          (node/id (:node %))))))
+  :ret  ::t
+  :fn   (s/and
+         (pc-every-other-key-remains-unchanged  #(-> % second :graph) [::nodes ::backlinks])
+         (pc-every-other-node-remains-unchanged #(-> % second :graph) #(->> % second :node))
+         (pc-does-not-contain-node              #(-> % second :node))))
+(defn- disj-node*
+  "Internal implementation of `disj-node`.
+  
+  Takes a `graph` and a node that must be contained in the graph as-is. Returns
+  a new graph with those nodes removed.
+
+  ## Caveats
+
+  - `node` must be equal to the `::node/t` associated with the graph. Otherwise,
+    it will fail to update the backlinks reciprocal graph correctly, thus
+    returning an invalid `::graph/t`."
+  ([graph] graph)
+  ([graph node]
+   (-> graph
+       (update ::nodes dissoc (node/id node))
+       (update ::backlinks backlinks/remove-from-node node))))
+
 (s/fdef disj-node
   :args (s/cat :graph ::t :node ::node/t)
   :ret ::t
-  :fn (s/and (node-op-invariant-fn
-              (fn [ret graph node]
-                (let [nodes-arg (::nodes graph)
-                      nodes-ret (::nodes ret)
-                      node-id   (node/id node)]
-                  (= nodes-ret (dissoc nodes-arg node-id)))))))
+  #_(:fn (s/and (node-op-invariant-fn
+                 (fn [ret graph node]
+                   (let [nodes-arg (::nodes graph)
+                         nodes-ret (::nodes ret)
+                         node-id   (node/id node)]
+                     (= nodes-ret (dissoc nodes-arg node-id))))))))
 (defn disj-node
   "Disj[oin]. Returns a new `graph` that does not contain the `node`."
   [graph node]
   (if-let [node (get-in graph [::nodes (node/id node)])]
-    (-> graph
-        (update ::nodes dissoc (::vault-file/id node))
-        (update ::backlinks backlinks/remove-from-node node))
+    (disj-node* graph node)
     graph))
 
 (s/fdef conj-node
@@ -172,6 +232,34 @@
   [graph vault-file]
   (conj-node graph (parser/parse (::parser-chain graph) vault-file graph)))
 
+;;;; Batch synchronization with the associated vault:
+
+(s/fdef node-ids-that-no-longer-exist
+  :args (s/cat :graph ::t :vault-files (s/coll-of ::vault-file :distinct true))
+  :ret  (s/coll-of ::vault-file :distinct true))
+(defn- node-ids-that-no-longer-exist
+  "Returns the list of node IDs from the graph that no longer exist.
+
+  Takes a `::graph/t` and the collection of all the `::vault-file/t`s that
+  exist in the vault's storage."
+  [graph vault-files]
+  (let [ids-still-exist (->> vault-files (map ::vault-file/id) set)
+        ids-in-graph    (-> graph ::nodes keys set)]
+    (set/difference ids-in-graph ids-still-exist)))
+
+(defn- remove-nodes-that-no-longer-exist
+  "Removes all the graph's nodes that no longer exist in its vault.
+
+  Takes a `::graph/t` and the collection of all the `::vault-file/t`s that
+  exist in the vault's storage."
+  [graph vault-files]
+  (let [nodes-in-graph  (-> graph ::nodes vals)
+        ids-still-exist (set (map ::vault-file/id vault-files))]
+    (transduce (filter (fn [node] (not (ids-still-exist (node/id node)))))
+               disj-node*
+               graph
+               nodes-in-graph)))
+
 (s/fdef batch-sync-graph-with-vault
   ;; Note that it's impossible to write a post-condition (`:fn`) for this
   ;; function due to it's non-deterministical and best-effort behavior.
@@ -194,6 +282,7 @@
   result."
   [graph]
   ;; Here we leverage the fact that `reduce` performs **eager** evaluation.
-  (reduce add-node-from-vault-file
-          graph
-          (vault/list-vault-files graph)))
+  (let [vault-files (vault/list-vault-files graph)]
+    (reduce add-node-from-vault-file
+            (remove-nodes-that-no-longer-exist graph vault-files)
+            vault-files)))
