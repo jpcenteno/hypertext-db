@@ -91,6 +91,10 @@
        (.setLastModified (::vault-file/last-modified-ms vf)))
      vf)))
 
+(defn vault-file-delete
+  [vault vault-file]
+  (.delete (vault-and-vault-file->java-file vault vault-file)))
+
 ;;;; hypertext-db.graph.node
 
 (s/fdef node :ret ::node/t)
