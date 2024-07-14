@@ -12,6 +12,7 @@
             [hypertext-db.vault.vault-file :as vault-file]
             [hypertext-db.graph.backlinks-impl :as backlinks]
             [hypertext-db.test.fixtures :as fixtures]
+            [hypertext-db.helpers.vault-file :as helpers.vault-file]
             [hypertext-db.test.simple-node-parser :as simple-parser])
   (:import (java.io File)))
 
@@ -38,6 +39,17 @@
   "A modified `node-a` without the link to `node-b`. Used for some of the
   tests."
   (assoc node-a ::node/links #{}))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Test helpers:                                                          ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef node-remains-unchanged?
+  :args (s/cat :graph-1 ::graph/t :graph-2 ::graph/t :node-id ::vault-file/id)
+  :ret  boolean?)
+(defn node-remains-unchanged? [graph-1 graph-2 node-id]
+  (= (graph/get-node graph-1 node-id)
+     (graph/get-node graph-2 node-id)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type spec tests and documentation                                      ║
@@ -474,21 +486,25 @@
 
   (testing "Creating and deleting files:"
     (testing "Creates and deletes multiple files:"
-      (let [vault     (fixtures/vault)
-            file-1    (fixtures/vault-file-that-exists vault)
-            file-2    (fixtures/vault-file-that-exists vault)
-            file-3    (fixtures/vault-file-that-exists vault)
-            file-4    (fixtures/vault-file-that-exists vault)
-            graph-pre (-> vault graph/vault-> graph/batch-sync-graph-with-vault)
-            file-5    (fixtures/vault-file-that-exists vault)
-            file-6    (fixtures/vault-file-that-exists vault)]
-        (fixtures/vault-file-delete graph-pre file-1)
-        (fixtures/vault-file-delete graph-pre file-2)
-        (let [graph-post (graph/batch-sync-graph-with-vault graph-pre)]
-          (is (not (graph/contains-node? graph-post (::vault-file/id file-1))))
-          (is (not (graph/contains-node? graph-post (::vault-file/id file-2))))
-          (is (= (graph/get-node graph-pre (::vault-file/id file-3)) (graph/get-node graph-post (::vault-file/id file-3))))
-          (is (= (graph/get-node graph-pre (::vault-file/id file-4)) (graph/get-node graph-post (::vault-file/id file-4))))
-          (is (graph/contains-node? graph-post (::vault-file/id file-5)))
-          (is (graph/contains-node? graph-post (::vault-file/id file-6)))
-          (is (= 4 (graph/node-count graph-post))))))))
+      (let [vault       (fixtures/vault)
+            vault-files (helpers.vault-file/generate-distinct 6)
+            _           (helpers.vault-file/ensure-exists (vault-files 0) vault)
+            _           (helpers.vault-file/ensure-exists (vault-files 1) vault)
+            _           (helpers.vault-file/ensure-exists (vault-files 2) vault)
+            _           (helpers.vault-file/ensure-exists (vault-files 3) vault)
+            graph-arg   (-> vault
+                            graph/vault->
+                            graph/batch-sync-graph-with-vault)]
+        (helpers.vault-file/ensure-does-not-exist (vault-files 0) vault)
+        (helpers.vault-file/ensure-does-not-exist (vault-files 1) vault)
+        (helpers.vault-file/ensure-exists         (vault-files 4) vault)
+        (helpers.vault-file/ensure-exists         (vault-files 5) vault)
+        (let [graph-ret (graph/batch-sync-graph-with-vault graph-arg)
+              ids       (mapv ::vault-file/id vault-files)]
+          (is (not (graph/contains-node? graph-ret           (ids 0))))
+          (is (not (graph/contains-node? graph-ret           (ids 1))))
+          (is (node-remains-unchanged?   graph-ret graph-arg (ids 2)))
+          (is (node-remains-unchanged?   graph-ret graph-arg (ids 3)))
+          (is (graph/contains-node?      graph-ret           (ids 4)))
+          (is (graph/contains-node?      graph-ret           (ids 5)))
+          (is (= 4 (graph/node-count     graph-ret))))))))
