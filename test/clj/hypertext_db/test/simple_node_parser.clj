@@ -1,11 +1,12 @@
 (ns hypertext-db.test.simple-node-parser
-  (:require [clojure.spec.alpha            :as s]
-            [clojure.string                :as str]
-            [hypertext-db.graph.node       :as node]
-            [hypertext-db.graph.parser     :as parser]
-            [hypertext-db.test.fixtures    :as fixtures]
-            [hypertext-db.vault            :as vault]
-            [hypertext-db.vault.vault-file :as vault-file])
+  (:require [clojure.spec.alpha              :as s]
+            [clojure.string                  :as str]
+            [hypertext-db.graph.node         :as node]
+            [hypertext-db.graph.parser       :as parser]
+            [hypertext-db.test.fixtures      :as fixtures]
+            [hypertext-db.helpers.vault-file :as helpers.vault-file]
+            [hypertext-db.vault              :as vault]
+            [hypertext-db.vault.vault-file   :as vault-file])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -44,7 +45,7 @@
 (defn create-vault-file
   [vault links]
   (let [vault-file (update (fixtures/vault-file) ::vault-file/id (fn [f] (File.  (str f extension))))
-        file       (#'vault/vault-file->java-file vault vault-file)
+        file       (helpers.vault-file/java-file vault-file vault)
         content    (->> links (map str) (str/join "\n"))]
     (spit file content)
     vault-file))
