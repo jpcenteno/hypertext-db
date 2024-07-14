@@ -48,9 +48,13 @@
 (s/fdef generate-distinct
   :args (s/cat :n pos-int?)
   :ret  (s/coll-of ::vault-file/t :distinct true :kind vector?))
-(defn generate-distinct
-  "Generates `n` distinct vault files"
-  [n]
+(defn generate-distinct [n]
   (first (gen/sample (gen/vector-distinct (s/gen ::vault-file/t)
                                           {:num-elements n})
                      1)))
+
+(s/fdef generate-distinct-and-existing
+  :args (s/cat :n pos-int? :vault ::vault/t)
+  :ret  (s/coll-of ::vault-file/t :distinct true :kind vector?))
+(defn generate-distinct-and-existing [n vault]
+  (mapv #(ensure-exists % vault) (generate-distinct n)))
