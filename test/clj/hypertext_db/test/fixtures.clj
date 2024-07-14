@@ -5,7 +5,8 @@
             [hypertext-db.graph.node       :as node]
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
-            [hypertext-db.graph :as graph])
+            [hypertext-db.graph :as graph]
+            [hypertext-db.helpers.vault-file :as helpers.vault-file])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -49,15 +50,6 @@
 
 ;;;; hypertext-db.vault.vault-file
 
-(s/fdef vault-and-vault-file->java-file
-  :args (s/cat :vault ::vault/t :vault-file ::vault-file/t)
-  :ret  #(instance? File %))
-(defn- vault-and-vault-file->java-file
-  [vault vault-file]
-  (let [base-path (::vault/dir vault)
-        rel-path  (::vault-file/id vault-file)]
-    (File. base-path (str rel-path))))
-
 (defn id
   ([]  (generate-one ::vault-file/id))
   ([s] (File. s)))
@@ -76,24 +68,13 @@
   :ret ::vault-file/t
   :fn  #(let [vault      (-> % :args second :vault)
               vault-file (-> % :ret)
-              file       (vault-and-vault-file->java-file vault vault-file)]
+              file       (helpers.vault-file/java-file vault-file vault)]
           (.exists file)))
 (defn vault-file-that-exists
   ([vault]
    (vault-file-that-exists vault {}))
   ([vault attrs]
-   (let [vf (vault-file attrs)
-         file (vault-and-vault-file->java-file vault vf)]
-     (doto (.getParentFile file)
-       (.mkdirs))
-     (doto file
-       (.createNewFile)
-       (.setLastModified (::vault-file/last-modified-ms vf)))
-     vf)))
-
-(defn vault-file-delete
-  [vault vault-file]
-  (.delete (vault-and-vault-file->java-file vault vault-file)))
+   (helpers.vault-file/ensure-exists (vault-file attrs) vault)))
 
 ;;;; hypertext-db.graph.node
 
