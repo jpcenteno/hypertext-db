@@ -125,11 +125,6 @@
 ; ║ Node operations                                                        ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(defn- node-op-invariant-fn [f]
-  #(let [{:keys [ret args]} %
-         {:keys [graph node]} args]
-     (f ret graph node)))
-
 (defn- pc-every-other-key-remains-unchanged
   "Post-condition which checks that a function can only alter certain keys.
 
@@ -233,19 +228,6 @@
   (conj-node graph (parser/parse (::parser-chain graph) vault-file graph)))
 
 ;;;; Batch synchronization with the associated vault:
-
-(s/fdef node-ids-that-no-longer-exist
-  :args (s/cat :graph ::t :vault-files (s/coll-of ::vault-file :distinct true))
-  :ret  (s/coll-of ::vault-file :distinct true))
-(defn- node-ids-that-no-longer-exist
-  "Returns the list of node IDs from the graph that no longer exist.
-
-  Takes a `::graph/t` and the collection of all the `::vault-file/t`s that
-  exist in the vault's storage."
-  [graph vault-files]
-  (let [ids-still-exist (->> vault-files (map ::vault-file/id) set)
-        ids-in-graph    (-> graph ::nodes keys set)]
-    (set/difference ids-in-graph ids-still-exist)))
 
 (defn- remove-nodes-that-no-longer-exist
   "Removes all the graph's nodes that no longer exist in its vault.

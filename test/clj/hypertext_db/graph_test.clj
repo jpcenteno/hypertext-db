@@ -391,13 +391,6 @@
                     (testing "with all the links passed to the fixture"
                       (is (= links (-> graph-after (graph/get-node id) ::node/links))))))))))))
 
-;; FIXME move this to a corresponding namespace.
-(s/fdef hash-map-subset?
-  :args (s/cat :m1 map? :m2 map?)
-  :ret  boolean?)
-(defn- hash-map-subset? [m1 m2]
-  (set/subset? (set m1) (set m2)))
-
 (deftest test-batch-sync-graph-with-vault
 
   (testing "Adds nodes after creating new files:"
