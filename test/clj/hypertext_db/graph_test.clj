@@ -471,18 +471,16 @@
         (is (zero? (graph/node-count graph-post)))))
 
     (testing "Removes two files, keeps one"
-      (let [vault      (fixtures/vault)
-            file-1     (fixtures/vault-file-that-exists vault)
-            file-2     (fixtures/vault-file-that-exists vault)
-            file-3     (fixtures/vault-file-that-exists vault)
+      (let [vault       (fixtures/vault)
+            vault-files (helpers.vault-file/generate-distinct-and-existing 3 vault)
             graph-pre  (-> vault graph/vault-> graph/batch-sync-graph-with-vault)]
-        (fixtures/vault-file-delete graph-pre file-1)
-        (fixtures/vault-file-delete graph-pre file-2)
+        (helpers.vault-file/ensure-does-not-exist (vault-files 0) vault)
+        (helpers.vault-file/ensure-does-not-exist (vault-files 1) vault)
         (let [graph-post (graph/batch-sync-graph-with-vault graph-pre)]
-          (is (not (graph/contains-node? graph-post (::vault-file/id file-1))))
-          (is (not (graph/contains-node? graph-post (::vault-file/id file-2))))
-          (is (graph/contains-node? graph-post (::vault-file/id file-3)))
-          (is (= 1 (graph/node-count graph-post)))))))
+          (is (not (graph/contains-node? graph-post (::vault-file/id (vault-files 0)))))
+          (is (not (graph/contains-node? graph-post (::vault-file/id (vault-files 1)))))
+          (is (graph/contains-node?      graph-post (::vault-file/id (vault-files 2))))
+          (is (= 1 (graph/node-count     graph-post)))))))
 
   (testing "Creating and deleting files:"
     (testing "Creates and deletes multiple files:"
