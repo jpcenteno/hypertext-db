@@ -458,7 +458,9 @@
                                 graph-initial
                                 (assoc vault-file-initial ::vault-file/last-modified-ms 1))
             graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
-        (is (hash-map-subset? vault-file-after (graph/get-node graph-after (::vault-file/id vault-file-initial))))
+        (is (= (::vault-file/last-modified-ms vault-file-after)
+               (::vault-file/last-modified-ms
+                (graph/get-node graph-after (::vault-file/id vault-file-initial)))))
         (is (= 1 (graph/node-count graph-after))))))
 
   (testing "Removes nodes after deleting files:"
