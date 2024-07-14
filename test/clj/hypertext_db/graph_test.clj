@@ -391,34 +391,34 @@
   (testing "Adds nodes after creating new files:"
 
     (testing "Returns an empty graph when no new files are created"
-      (let [empty-graph (fixtures/graph-empty)]
-        (is (= empty-graph (graph/batch-sync-graph-with-vault empty-graph)))))
+      (let [graph-arg (fixtures/graph-empty)]
+        (is (= graph-arg (graph/batch-sync-graph-with-vault graph-arg)))))
 
     (testing "Adds a single node to an empty graph after creating a new file"
-      (let [empty-graph (fixtures/graph-empty)
-            vault-file  (fixtures/vault-file-that-exists empty-graph)
-            graph-after (graph/batch-sync-graph-with-vault empty-graph)]
-        (is (= 1 (graph/node-count graph-after)))
-        (is (graph/contains-node? graph-after (::vault-file/id vault-file)))))
+      (let [graph-arg (fixtures/graph-empty)
+            vault-file  (fixtures/vault-file-that-exists graph-arg)
+            graph-ret (graph/batch-sync-graph-with-vault graph-arg)]
+        (is (graph/contains-node? graph-ret (::vault-file/id vault-file)))
+        (is (= 1 (graph/node-count graph-ret)))))
 
     (testing "Adds two nodes to an empty graph after creating two new files"
-      (let [empty-graph (fixtures/graph-empty)
-            vault-file-1  (fixtures/vault-file-that-exists empty-graph)
-            vault-file-2 (fixtures/vault-file-that-exists empty-graph)
-            graph-after (graph/batch-sync-graph-with-vault empty-graph)]
-        (is (= 2 (graph/node-count graph-after)))
-        (is (graph/contains-node? graph-after (::vault-file/id vault-file-1)))
-        (is (graph/contains-node? graph-after (::vault-file/id vault-file-2)))))
+      (let [graph-arg    (fixtures/graph-empty)
+            vault-file-1 (fixtures/vault-file-that-exists graph-arg)
+            vault-file-2 (fixtures/vault-file-that-exists graph-arg)
+            graph-ret    (graph/batch-sync-graph-with-vault graph-arg)]
+        (is (graph/contains-node? graph-ret (::vault-file/id vault-file-1)))
+        (is (graph/contains-node? graph-ret (::vault-file/id vault-file-2)))
+        (is (= 2 (graph/node-count graph-ret)))))
 
     (testing "Adds a node to a non-empty graph after creating another file"
-      (let [graph-initial (fixtures/graph-with-nodes-that-exist-in-vault)
-            vault-file-1  (-> graph-initial ::graph/nodes vals first)
-            vault-file-2  (fixtures/vault-file-that-exists graph-initial)
-            graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
-        (is (graph/contains-node? graph-after (::vault-file/id vault-file-2)))
-        (is (= (graph/get-node graph-initial (::vault-file/id vault-file-1))
-               (graph/get-node graph-after (::vault-file/id vault-file-1))))
-        (is (= 2 (graph/node-count graph-after)))))
+      (let [graph-arg     (fixtures/graph-with-nodes-that-exist-in-vault)
+            vault-file-1  (-> graph-arg ::graph/nodes vals first)
+            vault-file-2  (fixtures/vault-file-that-exists graph-arg)
+            graph-ret     (graph/batch-sync-graph-with-vault graph-arg)]
+        (is (graph/contains-node? graph-ret (::vault-file/id vault-file-2)))
+        (is (= (graph/get-node graph-arg (::vault-file/id vault-file-1))
+               (graph/get-node graph-ret (::vault-file/id vault-file-1))))
+        (is (= 2 (graph/node-count graph-ret)))))
 
     (testing "Adds a node to an empty graph with a custom parser"
       (let [graph-pre       (graph/set-parsers (fixtures/graph-empty)  [simple-parser/parser])
