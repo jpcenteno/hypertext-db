@@ -465,8 +465,7 @@
     (testing "Remove the sole node from a graph"
       (let [graph-pre  (fixtures/graph-with-nodes-that-exist-in-vault)
             vault-file (-> graph-pre ::graph/nodes vals first)
-            _          (doto (#'fixtures/vault-and-vault-file->java-file graph-pre vault-file)
-                         .delete)
+            _          (helpers.vault-file/ensure-does-not-exist vault-file graph-pre)
             graph-post (graph/batch-sync-graph-with-vault graph-pre)]
         (is (zero? (graph/node-count graph-post)))))
 
