@@ -1,6 +1,7 @@
 {:paths ["src/clj/"]
  :deps {org.clojure/clojure {:mvn/version "1.11.2"}
         failjure/failjure {:mvn/version "2.3.0"}
+        hawk/hawk         {:mvn/version "0.2.11"}
         pathetic/pathetic {:mvn/version "0.5.1"}}
  :aliases {:repl
            {:extra-paths ["test/clj"]
