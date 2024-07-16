@@ -47,12 +47,12 @@
 ; ║ Invariants and postconditions                                          ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(defn invariant-returns-argument
+(defn- invariant-returns-argument
   "Returns a predicate which checks that the return value equals an argument."
   [get-argument-fn]
   #(= (:ret %) (get-argument-fn (:args %))))
 
-(defn invariant-only-allowed-to-update-these-keys
+(defn- invariant-only-allowed-to-update-these-keys
   "Invariant for a function which is only allowed to update some map keys."
   [get-arg-fn ks]
   #(= (apply dissoc (:ret %) ks)
