@@ -82,7 +82,7 @@
   :args (s/and (s/cat :graph ::graph/t))
   :ret  ::t)
 (defn- start
-  "Starts a file-system watcher and registers it's stop function to the graph."
+  "Starts a file-system watcher and associates it to the graph."
   [graph]
   (if (stopped? graph)
     (assoc graph ::hawk-watcher
