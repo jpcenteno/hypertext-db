@@ -1,5 +1,6 @@
 (ns hypertext-db.vault
   (:require [clojure.spec.alpha :as s]
+            [clojure.string :as str]
             [pathetic.core :as path]
             [hypertext-db.vault.vault-file :as vault-file])
   (:import (java.io File)))
@@ -10,6 +11,21 @@
 
 (defn- file? [x]
   (instance? File x))
+
+(s/fdef absolute-file?
+  :args (s/cat :x any?)
+  :ret  boolean?)
+(defn absolute-file? [x]
+  (and (file? x) (.isAbsolute x)))
+
+(s/fdef absolute-file-in-vault?
+  :args (s/cat :vault ::t :absolute-file absolute-file?)
+  :ret  boolean?)
+(defn absolute-file-in-vault?
+  [vault absolute-file]
+  (str/starts-with?
+   (.getCanonicalPath absolute-file)
+   (.getCanonicalPath (::dir vault))))
 
 (s/def ::dir (s/and #(instance? File %)
                     #(.isDirectory %)))
