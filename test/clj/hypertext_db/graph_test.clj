@@ -7,6 +7,7 @@
             [clojure.test            :refer [deftest is testing]]
             [hypertext-db.graph            :as graph]
             [hypertext-db.graph.node       :as node]
+            [hypertext-db.graph.parser     :as graph.parser]
             [hypertext-db.helpers.tmp      :as tmp]
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
@@ -500,3 +501,36 @@
           (is (graph/contains-node?      graph-ret           (ids 4)))
           (is (graph/contains-node?      graph-ret           (ids 5)))
           (is (= 4 (graph/node-count     graph-ret))))))))
+
+(deftest test-upsert-node-given-full-path-
+  (testing "Does nothing provided a non-existing file"
+    (let [graph-arg (fixtures/graph-empty)
+          full-path (File. (::vault/dir graph-arg) "some-non-existing-file.txt")]
+      (is (= graph-arg (graph/upsert-node-given-full-path- graph-arg full-path)))))
+
+  (testing "Adds a new node associated to an existing file in the vault of an empty-graph"
+    ; FIXTURE:
+    ; - Empty graph as argument.
+    ; - New file in the graph's vault.
+    ; - Absolute file corresponding to that vault's file.
+    ; TEST:
+    ; - Using the function under test yields the same result as inserting the
+    ;   vault file directly.
+    (let [graph-arg      (fixtures/graph-empty)
+          vault-file     (-> (helpers.vault-file/generate-distinct 1)
+                             first
+                             (helpers.vault-file/ensure-exists graph-arg))
+          absolute-file  (helpers.vault-file/java-file vault-file graph-arg)
+          graph-expected (graph/add-node-from-vault-file graph-arg vault-file)]
+      (println "vault-dir     =" (str (::vault/dir graph-arg))) ;; FIXME delete
+      (println "vault-file id =" (str (::vault-file/id vault-file))) ;; FIXME delete
+      (println "absolute-file =" (str absolute-file)) ;; FIXME delete
+      (is (= graph-expected
+             (graph/upsert-node-given-full-path-
+              graph-arg
+              absolute-file)))))
+
+  #_(testing "Adds a new node associated to an existing file in the vault of a non-empty graph"
+      (throw (UnsupportedOperationException. "Test not yet implemented.")))
+  #_(testing "Updates a new node associated to a new version of a file in the vault"
+      (throw (UnsupportedOperationException. "Test not yet implemented."))))
