@@ -33,6 +33,34 @@
 (s/def ::t (s/keys :req [::dir]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ File path helpers                                                      ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef absolute-file->relative-file
+  :args (s/and (s/cat :vault ::t :absolute-file absolute-file?)
+               #(absolute-file-in-vault? (:vault %) (:absolute-file %)))
+  :ret  ::vault-file/id
+  :fn   #(= (-> % :args :absolute-file)
+            (File. (-> % :args :vault ::dir) (-> % :ret str))))
+(defn- absolute-file->relative-file
+  "Returns a file with it's path relative to the `vault` base directory."
+  [vault absolute-file]
+  (-> (::dir vault)
+      .toPath
+      (.relativize (.toPath absolute-file))
+      .toFile))
+
+(s/fdef absolute-file->vault-file
+  :args (s/and (s/cat :vault ::t :absolute-file absolute-file?)
+               #(absolute-file-in-vault? (:vault %) (:absolute-file %)))
+  :ret  ::vault-file/t)
+(defn absolute-file->vault-file
+  "Casts an absolute file into a [[::vault-file/t]] relative to `vault`."
+  [vault absolute-file]
+  (vault-file/file-> (absolute-file->relative-file vault absolute-file)
+                     (.lastModified absolute-file)))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Public: Constructors                                                   ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
