@@ -6,6 +6,39 @@
             [hypertext-db.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Internal type specs                                                    ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/def ::vault-to-write-to (s/nilable ::vault/t))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Generators                                                             ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/fdef updated-vault-file-generator
+  :args (s/cat :vault-file ::vault-file/t))
+(defn- updated-vault-file-generator
+  "Returns a generator for updated versions of `vault-file`.
+
+  ## Parameters
+
+  - `vault-file` the vault file to generate an updated version of.
+
+  ## Implementation details
+
+  - It will only generate an updated value for [[::vault-file/last-modified-ms]]."
+  [vault-file]
+  (->> (s/gen ::vault-file/last-modified-ms)
+       (gen/such-that #(not= (::vault-file/last-modified-ms vault-file) %))
+       (gen/fmap #(assoc vault-file ::vault-file/last-modified-ms %))))
+
+(class (updated-vault-file-generator nil))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Utility functions                                                      ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
 (s/fdef java-file
   :args (s/cat :vault-file ::vault-file/t :vault ::vault/t)
   :ret  #(instance? File %))
@@ -58,3 +91,25 @@
   :ret  (s/coll-of ::vault-file/t :distinct true :kind vector?))
 (defn generate-distinct-and-existing [n vault]
   (mapv #(ensure-exists % vault) (generate-distinct n)))
+
+(s/fdef generate-updated
+  :args (s/cat :vault-file ::vault-file/t
+               :opts (s/keys :opt-un [::vault-to-write-to]))
+  :ret  ::vault-file/t)
+(defn generate-updated
+  "Returns an updated version of `vault-file` optionaly updating it on the vault storage.
+
+  ## Parameters
+
+  - `vault-file`: A [[::vault-file/t]] to update.
+  - `opts`: A map that accepts the following options:
+    - `:vault-to-write-to`: Writes the updated version when passed a [[::vault/t]].
+
+  ## Returns
+
+  Returns an updated version of the [[::vault-file/t]] passed as argument."
+  [vault-file {:keys [vault-to-write-to]}]
+  (let [new-vault-file (-> (updated-vault-file-generator vault-file) (gen/sample 1) first)]
+    (if (some? vault-to-write-to)
+      (ensure-exists new-vault-file vault-to-write-to)
+      new-vault-file)))
