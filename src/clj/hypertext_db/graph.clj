@@ -5,7 +5,8 @@
             [hypertext-db.graph.parser         :as parser]
             [hypertext-db.graph.backlinks-impl :as backlinks]
             [hypertext-db.vault            :as vault]
-            [hypertext-db.vault.vault-file :as vault-file]))
+            [hypertext-db.vault.vault-file :as vault-file])
+  (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs : Graph attributes                                          ║
@@ -268,3 +269,24 @@
     (reduce add-node-from-vault-file
             (remove-nodes-that-no-longer-exist graph vault-files)
             vault-files)))
+
+(s/fdef upsert-node-given-full-path-
+  :args (s/and (s/cat :graph ::t :absolute-file vault/absolute-file?)
+               #(vault/absolute-file-in-vault? (:graph %) (:absolute-file %)))
+  :ret ::t)
+(defn upsert-node-given-full-path-
+  "(Internal) upserts a node provided it's full path."
+  [graph absolute-file]
+  (if (.exists absolute-file)
+    (add-node-from-vault-file
+     graph
+     (vault/absolute-file->vault-file graph absolute-file))
+    graph))
+
+(s/fdef remove-node-given-full-path-
+  :args (s/cat :graph ::t :full-path #(instance? File %))
+  :ret ::t)
+(defn remove-node-given-full-path-
+  "(Internal) removes a node with associated with the `full-path`"
+  [graph full-path]
+  (throw (UnsupportedOperationException. "Not implemented yet")))
