@@ -545,5 +545,20 @@
       (is (= graph-expected graph-ret))
       (is (= (inc (graph/node-count graph-arg)) (graph/node-count graph-ret)))))
 
-  #_(testing "Updates a new node associated to a new version of a file in the vault"
-      (throw (UnsupportedOperationException. "Test not yet implemented."))))
+  (testing "Updates a node"
+    ; FIXTURE:
+    ; - Non-empty graph to use as argument.
+    ; - Updated vault file.
+    ; - Absolute file corresponding to that vault's file.
+    ; TEST:
+    ; - Using the function under test yields the same result as inserting the
+    ;   vault file directly.
+    ; - Graph now contains the updated version of the vault-file.
+    (let [input-graph         (fixtures/graph-with-nodes-that-exist-in-vault)
+          original-vault-file (-> input-graph ::graph/nodes vals first)
+          updated-vault-file  (helpers.vault-file/generate-updated
+                               original-vault-file
+                               {:vault-to-write-to input-graph})
+          absolute-file       (helpers.vault-file/java-file updated-vault-file input-graph)]
+      (is (= (graph/add-node-from-vault-file input-graph updated-vault-file)
+             (graph/upsert-node-given-full-path- input-graph absolute-file))))))
