@@ -1,7 +1,10 @@
 (ns hypertext-db.event-monitor-test
   (:require [clojure.test                    :refer [deftest is testing]]
             [hypertext-db.event-monitor      :as event-monitor]
-            [hypertext-db.test.fixtures      :as fixtures]))
+            [hypertext-db.graph              :as graph]
+            [hypertext-db.helpers.vault-file :as helpers.vault-file]
+            [hypertext-db.test.fixtures      :as fixtures]
+            [hypertext-db.vault.vault-file   :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Helpers                                                                ║
@@ -10,6 +13,13 @@
 (defmacro with-graph-atom [name & body]
   `(let [~name (atom (fixtures/graph-empty))]
      ~@body))
+
+(defmacro with-graph-atom-watched [name & body]
+  `(with-graph-atom ~name
+     (try
+       (event-monitor/start! ~name)
+       ~@body
+       (finally (event-monitor/stop! ~name)))))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Tests                                                                  ║
@@ -41,3 +51,16 @@
           (is (= graph-atom-arg graph-atom-ret) "Returns the same reference")
           (is (nil? (#'event-monitor/get-watcher graph-atom-ret)))
           (is (#'event-monitor/stopped? graph-atom-ret))))))
+
+(deftest test-create-files
+  (testing "Adds a file to the graph after its creation"
+    (with-graph-atom-watched graph-atom
+      (let [vault-file (first (helpers.vault-file/generate-distinct 1))]
+        (helpers.vault-file/ensure-exists vault-file @graph-atom)
+        (Thread/sleep 1000)
+        (let [graph @graph-atom]
+          (is (= 1 (graph/node-count graph)))
+          (is (graph/contains-node? graph (::vault-file/id vault-file))))))))
+
+;; FIXME (deftest test-update-files)
+;; FIXME (deftest test-delete-files)
