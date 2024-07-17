@@ -508,7 +508,7 @@
           full-path (File. (::vault/dir graph-arg) "some-non-existing-file.txt")]
       (is (= graph-arg (graph/upsert-node-given-full-path- graph-arg full-path)))))
 
-  (testing "Adds a new node associated to an existing file in the vault of an empty-graph"
+  (testing "Adds a new node (empty graph)"
     ; FIXTURE:
     ; - Empty graph as argument.
     ; - New file in the graph's vault.
@@ -522,15 +522,28 @@
                              (helpers.vault-file/ensure-exists graph-arg))
           absolute-file  (helpers.vault-file/java-file vault-file graph-arg)
           graph-expected (graph/add-node-from-vault-file graph-arg vault-file)]
-      (println "vault-dir     =" (str (::vault/dir graph-arg))) ;; FIXME delete
-      (println "vault-file id =" (str (::vault-file/id vault-file))) ;; FIXME delete
-      (println "absolute-file =" (str absolute-file)) ;; FIXME delete
       (is (= graph-expected
              (graph/upsert-node-given-full-path-
               graph-arg
               absolute-file)))))
 
-  #_(testing "Adds a new node associated to an existing file in the vault of a non-empty graph"
-      (throw (UnsupportedOperationException. "Test not yet implemented.")))
+  (testing "Adds a new node (non-empty graph)"
+    ; FIXTURE:
+    ; - Non-empty graph to use as argument.
+    ; - New file in the graph's vault.
+    ; - Absolute file corresponding to that vault's file.
+    ; TEST:
+    ; - Using the function under test yields the same result as inserting the
+    ;   vault file directly.
+    (let [graph-arg      (fixtures/graph-with-nodes-that-exist-in-vault)
+          vault-file     (-> (helpers.vault-file/generate-distinct 1)
+                             first
+                             (helpers.vault-file/ensure-exists graph-arg))
+          absolute-file  (helpers.vault-file/java-file vault-file graph-arg)
+          graph-expected (graph/add-node-from-vault-file graph-arg vault-file)
+          graph-ret      (graph/upsert-node-given-full-path- graph-arg absolute-file)]
+      (is (= graph-expected graph-ret))
+      (is (= (inc (graph/node-count graph-arg)) (graph/node-count graph-ret)))))
+
   #_(testing "Updates a new node associated to a new version of a file in the vault"
       (throw (UnsupportedOperationException. "Test not yet implemented."))))
