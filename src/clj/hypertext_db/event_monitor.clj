@@ -5,22 +5,20 @@
   asynchronous nature.
   thread to a shared
   graph"
-  (:require [clojure.spec.alpha :as s]
-            [hawk.core          :as hawk]
-            [hypertext-db.graph :as graph]
-            [hypertext-db.vault :as vault])
-  (:import (clojure.lang Atom)
-           (java.lang Thread)
-           (java.nio.file WatchService)))
+  (:require [clojure.spec.alpha                    :as s]
+            [hawk.core                             :as hawk]
+            [hypertext-db.event-monitor.hawk-specs :as hawk.specs]
+            [hypertext-db.graph                    :as graph]
+            [hypertext-db.vault                    :as vault])
+  (:import (clojure.lang Atom)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-;; This namespace uses the Hawk library internally. This is the 
-(s/def ::thread #(instance? Thread %))
-(s/def ::watcher #(instance? WatchService %))
-(s/def ::hawk-watcher (s/keys :req-un [::thread ::watcher]))
+(defmacro atom-spec [wrapped-spec]
+  `(s/and #(instance? Atom %)
+          #(s/valid? ~wrapped-spec (deref %))))
 
 ;; NOTE that using this `spec` to write function contracts is not thread safe.
 ;; We should expect false positives due to race conditions between the phases
@@ -35,13 +33,17 @@
 ;; Passing a validator during atom creation would be the safest way to prevent
 ;; invalid states, but it comes with the added cost of running a costly spec
 ;; validation after each time the graph is updated.
-(s/def ::graph-atom (s/and #(instance? Atom %)
-                           #(s/valid? ::graph/t (deref %))))
+(s/def ::graph-atom (atom-spec ::graph/t))
+
+(s/def ::hawk-watcher ::hawk.specs/watch)
 
 (s/def ::t (s/merge ::graph/t
                     (s/keys :req [::hawk-watcher])))
 
-(s/def ::t-atom (s/and #(instance? Atom %) #(s/valid? ::t (deref %))))
+(s/def ::t-atom (atom-spec ::t))
+
+(s/def ::context-
+  (s/keys :req [::t-atom]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Invariants and postconditions                                          ║
@@ -52,7 +54,7 @@
   [get-argument-fn]
   #(= (:ret %) (get-argument-fn (:args %))))
 
-(defn- invariant-only-allowed-to-update-these-keys
+(defn- invariant-allowed-to-modify
   "Invariant for a function which is only allowed to update some map keys."
   [get-arg-fn ks]
   #(= (apply dissoc (:ret %) ks)
@@ -78,25 +80,38 @@
 ; ║ Internal helpers                                                       ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
+(s/fdef handle-event
+  :args (s/cat :context ::context- :event ::hawk.specs/event))
+(defn- handle-event
+  [context event]
+  (println "context =" context)
+  (let [graph-atom (::t-atom context)
+        event-kind (:kind event)
+        full-path  (:file event)]
+    (case event-kind
+      :create (swap! graph-atom graph/upsert-node-given-full-path- full-path)
+      :modify (swap! graph-atom graph/upsert-node-given-full-path- full-path)
+      :delete (swap! graph-atom graph/remove-node-given-full-path- full-path))
+    context))
+
 (s/fdef start
-  :args (s/and (s/cat :graph ::graph/t))
-  :ret  ::t)
+  :args (s/and (s/cat :graph ::graph/t :graph-atom ::graph-atom))
+  :ret  ::t
+  :fn   (s/and (invariant-allowed-to-modify :graph [::hawk-watcher])))
 (defn- start
   "Starts a file-system watcher and associates it to the graph."
-  [graph]
+  [graph graph-atom]
   (if (stopped? graph)
     (assoc graph ::hawk-watcher
            (hawk/watch! [{:paths [(::vault/dir graph)]
-                          :handler (fn [ctx e]
-                                     (println "event: " e)
-                                     (println "context: " ctx)
-                                     ctx)}]))
+                          :context (constantly {::t-atom graph-atom})
+                          :handler handle-event}]))
     graph))
 
 (s/fdef stop
   :args (s/cat :graph ::graph/t)
   :ret  ::graph/t
-  :fn   (s/and (invariant-only-allowed-to-update-these-keys :graph [::hawk-watcher])))
+  :fn   (s/and (invariant-allowed-to-modify :graph [::hawk-watcher])))
 (defn- stop
   "Stops any watcher attached to the graph, then dissocs it from the graph."
   [graph]
@@ -115,7 +130,7 @@
   :fn   (s/and (invariant-returns-argument :graph-atom)
                #(not (stopped? (:ret %)))))
 (defn start! [graph-atom]
-  (swap! graph-atom start)
+  (swap! graph-atom start graph-atom)
   graph-atom)
 
 (s/fdef stop!
