@@ -4,6 +4,7 @@
             [hypertext-db.test.fixtures :as fixtures]
             [hypertext-db.vault :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
+            [hypertext-db.helpers.vault-file :as helpers.vault-file]
             [clojure.spec.alpha :as s])
   (:import (java.io File)))
 
@@ -62,3 +63,16 @@
               file         (File. (::vault/dir vault) (-> vault-file ::vault-file/id str))]
           (spit file "Some text")
           (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
+
+(deftest test-absolute-file-in-vault?
+  (testing "An absolute file inside the vault"
+    (let [vault         (fixtures/vault)
+          absolute-file (-> (helpers.vault-file/generate-distinct 1)
+                            first
+                            (helpers.vault-file/java-file vault))]
+      (is (vault/absolute-file-in-vault? vault absolute-file))))
+
+  (testing "An absolute file outside the vault"
+    (is (not (vault/absolute-file-in-vault?
+              (fixtures/vault)
+              (File. "/outside/the/vault.xyz"))))))
