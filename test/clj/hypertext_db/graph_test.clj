@@ -508,13 +508,6 @@
       (is (= graph-arg (graph/upsert-node-given-full-path- graph-arg full-path)))))
 
   (testing "Adds a new node (empty graph)"
-    ; FIXTURE:
-    ; - Empty graph as argument.
-    ; - New file in the graph's vault.
-    ; - Absolute file corresponding to that vault's file.
-    ; TEST:
-    ; - Using the function under test yields the same result as inserting the
-    ;   vault file directly.
     (let [graph-arg      (fixtures/graph-empty)
           vault-file     (-> (helpers.vault-file/generate-distinct 1)
                              first
@@ -527,13 +520,6 @@
               absolute-file)))))
 
   (testing "Adds a new node (non-empty graph)"
-    ; FIXTURE:
-    ; - Non-empty graph to use as argument.
-    ; - New file in the graph's vault.
-    ; - Absolute file corresponding to that vault's file.
-    ; TEST:
-    ; - Using the function under test yields the same result as inserting the
-    ;   vault file directly.
     (let [graph-arg      (fixtures/graph-with-nodes-that-exist-in-vault)
           vault-file     (-> (helpers.vault-file/generate-distinct 1)
                              first
@@ -545,14 +531,6 @@
       (is (= (inc (graph/node-count graph-arg)) (graph/node-count graph-ret)))))
 
   (testing "Updates a node"
-    ; FIXTURE:
-    ; - Non-empty graph to use as argument.
-    ; - Updated vault file.
-    ; - Absolute file corresponding to that vault's file.
-    ; TEST:
-    ; - Using the function under test yields the same result as inserting the
-    ;   vault file directly.
-    ; - Graph now contains the updated version of the vault-file.
     (let [input-graph         (fixtures/graph-with-nodes-that-exist-in-vault)
           original-vault-file (-> input-graph ::graph/nodes vals first)
           updated-vault-file  (helpers.vault-file/generate-updated-version
