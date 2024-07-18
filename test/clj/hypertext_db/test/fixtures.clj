@@ -83,7 +83,7 @@
   "Generates a random `::node/t`."
   ([]  (node {}))
   ([m] (let [node (merge (generate-one ::node/t) m)
-             id   (::vault-file/id node)]
+             id   (vault-file/id node)]
          ; Prevent the case where the random backlinks include an ID provided in
          ; `m`.
          (-> node
