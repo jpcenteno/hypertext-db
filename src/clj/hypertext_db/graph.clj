@@ -284,9 +284,12 @@
     graph))
 
 (s/fdef remove-node-given-full-path-
-  :args (s/cat :graph ::t :full-path #(instance? File %))
+  :args (s/cat :graph ::t :absolute-file vault/absolute-file?)
   :ret ::t)
 (defn remove-node-given-full-path-
-  "(Internal) removes a node with associated with the `full-path`"
-  [graph full-path]
-  (throw (UnsupportedOperationException. "Not implemented yet")))
+  "(Internal) removes a node associated with the `full-path`."
+  [graph absolute-file]
+  (let [id (vault/absolute-file->relative-file graph absolute-file)]
+    (if-let [node (get-node graph id)]
+      (disj-node* graph node)
+      graph)))

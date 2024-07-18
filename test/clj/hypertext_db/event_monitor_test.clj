@@ -77,5 +77,13 @@
         (is (= (::vault-file/last-modified-ms some-vault-file')
                (::vault-file/last-modified-ms (graph/get-node @graph-atom (::vault-file/id some-vault-file')))))))))
 
-;; FIXME (deftest test-update-files)
-;; FIXME (deftest test-delete-files)
+(deftest test-delete-files
+  (testing "Removes a node after it's file is deleted from the vault"
+    (with-event-monitor [graph-atom (fixtures/graph-with-nodes-that-exist-in-vault)]
+      (-> @graph-atom
+          ::graph/nodes
+          vals
+          first
+          (helpers.vault-file/ensure-does-not-exist @graph-atom))
+      (Thread/sleep 1000)
+      (is (zero? (graph/node-count @graph-atom))))))
