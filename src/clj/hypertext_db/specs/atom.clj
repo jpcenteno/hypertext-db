@@ -1,4 +1,4 @@
-(ns hypertext-db.utils.specs
+(ns hypertext-db.specs.atom
   (:require [clojure.spec.alpha :as s]))
 
 (defn atom? [x]
