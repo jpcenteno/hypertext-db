@@ -9,6 +9,7 @@
             [hawk.core                             :as hawk]
             [hypertext-db.event-monitor.hawk-specs :as hawk.specs]
             [hypertext-db.graph                    :as graph]
+            [hypertext-db.utils.specs              :as u.specs]
             [hypertext-db.vault                    :as vault])
   (:import (clojure.lang Atom)))
 
@@ -16,34 +17,11 @@
 ; ║ Type specs                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(defmacro atom-spec [wrapped-spec]
-  `(s/and #(instance? Atom %)
-          #(s/valid? ~wrapped-spec (deref %))))
-
-;; NOTE that using this `spec` to write function contracts is not thread safe.
-;; We should expect false positives due to race conditions between the phases
-;; of:
-;; 1. Argument predicate validation.
-;; 2. Function evaluation.
-;; 3. Return predicate validation.
-;; 4. Postcondition and invariants (`:fn`) validation.
-;;
-;; Nonetheless, this will be useful for catching bugs during the test phase.
-;;
-;; Passing a validator during atom creation would be the safest way to prevent
-;; invalid states, but it comes with the added cost of running a costly spec
-;; validation after each time the graph is updated.
-(s/def ::graph-atom (atom-spec ::graph/t))
-
 (s/def ::hawk-watcher ::hawk.specs/watch)
-
 (s/def ::t (s/merge ::graph/t
                     (s/keys :req [::hawk-watcher])))
 
-(s/def ::t-atom (atom-spec ::t))
-
-(s/def ::context-
-  (s/keys :req [::t-atom]))
+(s/def ::context- (u.specs/atom* ::t))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Invariants and postconditions                                          ║
@@ -65,14 +43,14 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef get-watcher
-  :args (s/cat :x (s/or :wrapped ::graph-atom :unwrapped ::graph/t))
+  :args (s/cat :x (s/or :wrapped (u.specs/atom* ::graph/t) :unwrapped ::graph/t))
   :ret  (s/nilable ::hawk-watcher))
 (defmulti ^:private get-watcher #(if (instance? Atom %) :wrapped :unwrapped))
 (defmethod get-watcher :wrapped   [a] (get-watcher @a))
 (defmethod get-watcher :unwrapped [g] (::hawk-watcher g))
 
 (s/fdef stopped?
-  :args (s/cat :x (s/or :wrapped ::graph-atom :unwrapped ::graph/t))
+  :args (s/cat :x (s/or :wrapped (u.specs/atom* ::graph/t) :unwrapped ::graph/t))
   :ret  boolean?)
 (defn- stopped? [x] (nil? (get-watcher x)))
 
@@ -81,20 +59,19 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef handle-event
-  :args (s/cat :context ::context- :event ::hawk.specs/event))
+  :args (s/cat :graph-atom ::context- :event ::hawk.specs/event))
 (defn- handle-event
-  [context event]
-  (let [graph-atom (::t-atom context)
-        event-kind (:kind event)
+  [graph-atom event]
+  (let [event-kind (:kind event)
         full-path  (:file event)]
     (case event-kind
       :create (swap! graph-atom graph/upsert-node-given-full-path- full-path)
       :modify (swap! graph-atom graph/upsert-node-given-full-path- full-path)
       :delete (swap! graph-atom graph/remove-node-given-full-path- full-path))
-    context))
+    graph-atom))
 
 (s/fdef start
-  :args (s/and (s/cat :graph ::graph/t :graph-atom ::graph-atom))
+  :args (s/and (s/cat :graph ::graph/t :graph-atom (u.specs/atom* ::graph/t)))
   :ret  ::t
   :fn   (s/and (invariant-allowed-to-modify :graph [::hawk-watcher])))
 (defn- start
@@ -103,7 +80,7 @@
   (if (stopped? graph)
     (assoc graph ::hawk-watcher
            (hawk/watch! [{:paths [(::vault/dir graph)]
-                          :context (constantly {::t-atom graph-atom})
+                          :context (constantly graph-atom)
                           :handler handle-event}]))
     graph))
 
@@ -124,8 +101,8 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef start!
-  :args (s/cat :graph-atom ::graph-atom)
-  :ret  ::t-atom
+  :args (s/cat :graph-atom (u.specs/atom* ::graph/t))
+  :ret  (u.specs/atom* ::t)
   :fn   (s/and (invariant-returns-argument :graph-atom)
                #(not (stopped? (:ret %)))))
 (defn start! [graph-atom]
@@ -133,8 +110,8 @@
   graph-atom)
 
 (s/fdef stop!
-  :args (s/cat :graph-atom ::graph-atom)
-  :ret ::graph-atom
+  :args (s/cat :graph-atom (u.specs/atom* ::graph/t))
+  :ret (u.specs/atom* ::graph/t)
   :fn  (s/and (invariant-returns-argument :graph-atom)
               #(stopped? (:ret %))))
 (defn stop!
