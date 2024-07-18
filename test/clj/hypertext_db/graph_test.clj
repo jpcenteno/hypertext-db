@@ -535,7 +535,7 @@
           original-vault-file (-> input-graph ::graph/nodes vals first)
           updated-vault-file  (helpers.vault-file/generate-updated-version
                                original-vault-file
-                               {:vault-to-write-to input-graph})
+                               {:write-to-this-vault input-graph})
           absolute-file       (helpers.vault-file/java-file updated-vault-file input-graph)]
       (is (= (graph/add-node-from-vault-file input-graph updated-vault-file)
              (graph/upsert-node-given-full-path- input-graph absolute-file))))))

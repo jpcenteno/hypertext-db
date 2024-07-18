@@ -69,7 +69,7 @@
             some-vault-file     (-> initial-graph-state ::graph/nodes vals first)
             some-vault-file'    (helpers.vault-file/generate-updated-version
                                  some-vault-file
-                                 {:vault-to-write-to initial-graph-state})]
+                                 {:write-to-this-vault initial-graph-state})]
         (Thread/sleep 1000) ; FIXME implement a function that insists until result or timeout.
         (is (= (graph/node-count initial-graph-state)
                (graph/node-count @graph-atom)))

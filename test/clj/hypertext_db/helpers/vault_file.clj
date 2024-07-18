@@ -10,7 +10,7 @@
 ; ║ Internal type specs                                                    ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(s/def ::vault-to-write-to (s/nilable ::vault/t))
+(s/def ::write-to-this-vault (s/nilable ::vault/t))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Generators                                                             ║
@@ -92,7 +92,7 @@
 
 (s/fdef generate-updated-version
   :args (s/cat :vault-file ::vault-file/t
-               :opts (s/keys :opt-un [::vault-to-write-to]))
+               :opts (s/keys :opt-un [::write-to-this-vault]))
   :ret  ::vault-file/t)
 (defn generate-updated-version
   "Returns an updated version of `vault-file` optionaly updating it on the vault storage.
@@ -101,13 +101,13 @@
 
   - `vault-file`: A [[::vault-file/t]] to update.
   - `opts`: A map that accepts the following options:
-    - `:vault-to-write-to`: Writes the updated version when passed a [[::vault/t]].
+    - `:write-to-this-vault`: Writes the updated version when passed a [[::vault/t]].
 
   ## Returns
 
   Returns an updated version of the [[::vault-file/t]] passed as argument."
-  [vault-file {:keys [vault-to-write-to]}]
+  [vault-file {:keys [write-to-this-vault]}]
   (let [new-vault-file (-> (updated-vault-file-generator vault-file) (gen/sample 1) first)]
-    (if (some? vault-to-write-to)
-      (ensure-exists new-vault-file vault-to-write-to)
+    (if (some? write-to-this-vault)
+      (ensure-exists new-vault-file write-to-this-vault)
       new-vault-file)))
