@@ -10,10 +10,6 @@
 ; ║ Helpers                                                                ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(defmacro with-graph-atom [name & body]
-  `(let [~name (atom (fixtures/graph-empty))]
-     ~@body))
-
 (defmacro with-event-monitor [[name graph-constructor] & body]
   `(let [~name (atom ~graph-constructor)]
      (try
@@ -26,16 +22,21 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (deftest test-start
+
   (testing "Associates a running watcher handle to the graph"
-    (is (with-graph-atom graph-atom-arg
-          (let [graph-atom-ret (event-monitor/start! graph-atom-arg)]
-            (is (not (#'event-monitor/stopped? graph-atom-ret)))))))
+    (is (let [graph-atom-arg (atom (hypertext-db.test.fixtures/graph-empty))
+              graph-atom-ret (event-monitor/start! graph-atom-arg)]
+          (is (not (#'event-monitor/stopped? graph-atom-ret))))))
 
   (testing "Does nothing when provided an graph with a watcher"
-    (is (with-graph-atom graph-atom-arg
-          (let [watcher-arg (-> graph-atom-arg event-monitor/start! (#'event-monitor/get-watcher))
-                watcher-ret (-> graph-atom-arg event-monitor/start! (#'event-monitor/get-watcher))]
-            (is (= watcher-arg watcher-ret)))))))
+    (is (let [graph-atom-arg (atom (hypertext-db.test.fixtures/graph-empty))
+              watcher-arg    (-> graph-atom-arg
+                                 event-monitor/start!
+                                 (#'event-monitor/get-watcher))
+              watcher-ret    (-> graph-atom-arg
+                                 event-monitor/start!
+                                 (#'event-monitor/get-watcher))]
+          (is (= watcher-arg watcher-ret))))))
 
 (deftest test-stop
 
