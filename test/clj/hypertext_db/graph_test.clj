@@ -555,7 +555,7 @@
     ; - Graph now contains the updated version of the vault-file.
     (let [input-graph         (fixtures/graph-with-nodes-that-exist-in-vault)
           original-vault-file (-> input-graph ::graph/nodes vals first)
-          updated-vault-file  (helpers.vault-file/generate-updated
+          updated-vault-file  (helpers.vault-file/generate-updated-version
                                original-vault-file
                                {:vault-to-write-to input-graph})
           absolute-file       (helpers.vault-file/java-file updated-vault-file input-graph)]
