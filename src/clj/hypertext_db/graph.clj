@@ -12,9 +12,9 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (defn- key-equals-node-id? [[k node]]
-  (= k (::vault-file/id node)))
+  (= k (vault-file/id node)))
 
-(s/def ::nodes (s/and (s/map-of ::vault-file/id ::node/t)
+(s/def ::nodes (s/and (s/map-of vault-file/id-spec ::node/t)
                       (s/every key-equals-node-id?)))
 
 (s/def ::parser-chain ::parser/parser-chain)
@@ -49,7 +49,7 @@
 
 (defn- flatten-links-from-node
   [node]
-  (let [from   (::vault-file/id node)
+  (let [from   (vault-file/id node)
         to-ids (::node/links node)]
     (map (fn [to] [from to]) to-ids)))
 
@@ -84,14 +84,14 @@
   (-> graph ::nodes count))
 
 (s/fdef contains-node?
-  :args (s/cat :graph ::t :node-id ::vault-file/id)
+  :args (s/cat :graph ::t :node-id vault-file/id?)
   :ret boolean?)
 (defn contains-node?
   [graph node-id]
   (contains? (::nodes graph) node-id))
 
 (s/fdef get-node
-  :args (s/cat :graph ::t :id ::vault-file/id)
+  :args (s/cat :graph ::t :id vault-file/id?)
   :ret  (s/nilable ::node/t))
 (defn get-node
   [graph node-id]
@@ -153,7 +153,7 @@
 (defn- pc-every-other-node-remains-unchanged
   [get-graph-fn get-node-fn]
   (fn [m]
-    (let [node-id-arg (-> m :args get-node-fn ::vault-file/id)
+    (let [node-id-arg (-> m :args get-node-fn vault-file/id)
           nodes-arg   (-> m :args get-graph-fn ::nodes)
           nodes-ret   (-> m :ret ::nodes)]
       (= nodes-ret
@@ -208,13 +208,13 @@
   :ret  ::t
   :fn   (s/and #(let [node (-> % :args :node)]
                   (= node (get-in % [:ret ::nodes (node/id node)])))
-               #(let [id  (get-in % [:args :node ::vault-file/id])]
+               #(let [id  (-> % :args :node vault-file/id)]
                   (= (dissoc (get-in % [:args :graph ::nodes]) id)
                      (dissoc (get-in % [:ret ::nodes])         id)))))
 (defn conj-node
   "Conj[oin] node. Returns a new `graph` with the `node` 'added'."
   [graph node]
-  (let [id (::vault-file/id node)]
+  (let [id (vault-file/id node)]
     (-> graph
         (disj-node node)
         (assoc-in [::nodes id] node)
@@ -236,7 +236,7 @@
   exist in the vault's storage."
   [graph vault-files]
   (let [nodes-in-graph  (-> graph ::nodes vals)
-        ids-still-exist (set (map ::vault-file/id vault-files))]
+        ids-still-exist (set (map vault-file/id vault-files))]
     (transduce (filter (fn [node] (not (ids-still-exist (node/id node)))))
                disj-node*
                graph

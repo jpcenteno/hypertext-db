@@ -45,7 +45,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef node-remains-unchanged?
-  :args (s/cat :graph-1 ::graph/t :graph-2 ::graph/t :node-id ::vault-file/id)
+  :args (s/cat :graph-1 ::graph/t :graph-2 ::graph/t :node-id vault-file/id?)
   :ret  boolean?)
 (defn node-remains-unchanged? [graph-1 graph-2 node-id]
   (= (graph/get-node graph-1 node-id)
@@ -364,7 +364,7 @@
     (is (let [vault         (first (gen/sample (s/gen ::vault/t) 1))
               input-graph   (graph/vault-> vault)
               vault-file    (first (gen/sample (s/gen ::vault-file/t) 1))
-              expected-id   (::vault-file/id vault-file)
+              expected-id   (vault-file/id vault-file)
               result        (graph/add-node-from-vault-file input-graph vault-file)]
           (testing "increasing the node count"
             (is (= (inc (graph/node-count input-graph))
@@ -381,7 +381,7 @@
           (testing "and a `::vault-file/t` that the parser CAN parse"
             (is (let [links       #{(File. "foo.md") (File. "bar.png")}
                       vault-file  (simple-parser/create-vault-file graph links)
-                      id          (::vault-file/id vault-file)
+                      id          (vault-file/id vault-file)
                       graph-after (graph/add-node-from-vault-file graph vault-file)]
 
                   (testing "Returns a graph containing a node"
@@ -403,7 +403,7 @@
       (let [graph-arg (fixtures/graph-empty)
             vault-file  (fixtures/vault-file-that-exists graph-arg)
             graph-ret (graph/batch-sync-graph-with-vault graph-arg)]
-        (is (graph/contains-node? graph-ret (::vault-file/id vault-file)))
+        (is (graph/contains-node? graph-ret (vault-file/id vault-file)))
         (is (= 1 (graph/node-count graph-ret)))))
 
     (testing "Adds two nodes to an empty graph after creating two new files"
@@ -411,8 +411,8 @@
             vault-file-1 (fixtures/vault-file-that-exists graph-arg)
             vault-file-2 (fixtures/vault-file-that-exists graph-arg)
             graph-ret    (graph/batch-sync-graph-with-vault graph-arg)]
-        (is (graph/contains-node? graph-ret (::vault-file/id vault-file-1)))
-        (is (graph/contains-node? graph-ret (::vault-file/id vault-file-2)))
+        (is (graph/contains-node? graph-ret (vault-file/id vault-file-1)))
+        (is (graph/contains-node? graph-ret (vault-file/id vault-file-2)))
         (is (= 2 (graph/node-count graph-ret)))))
 
     (testing "Adds a node to a non-empty graph after creating another file"
@@ -420,18 +420,18 @@
             vault-file-1  (-> graph-arg ::graph/nodes vals first)
             vault-file-2  (fixtures/vault-file-that-exists graph-arg)
             graph-ret     (graph/batch-sync-graph-with-vault graph-arg)]
-        (is (graph/contains-node? graph-ret (::vault-file/id vault-file-2)))
-        (is (= (graph/get-node graph-arg (::vault-file/id vault-file-1))
-               (graph/get-node graph-ret (::vault-file/id vault-file-1))))
+        (is (graph/contains-node? graph-ret (vault-file/id vault-file-2)))
+        (is (= (graph/get-node graph-arg (vault-file/id vault-file-1))
+               (graph/get-node graph-ret (vault-file/id vault-file-1))))
         (is (= 2 (graph/node-count graph-ret)))))
 
     (testing "Adds a node to an empty graph with a custom parser"
       (let [graph-pre       (graph/set-parsers (fixtures/graph-empty)  [simple-parser/parser])
             vault-file-from (simple-parser/create-vault-file graph-pre #{(File. "to.png")})
             graph-post      (graph/batch-sync-graph-with-vault graph-pre)]
-        (is (graph/contains-node? graph-post (::vault-file/id vault-file-from))
+        (is (graph/contains-node? graph-post (vault-file/id vault-file-from))
             "The returned graph should contain the node associated to the new file")
-        (is (-> graph-post (graph/get-node (::vault-file/id vault-file-from)) ::node/links (contains? (File. "to.png")))
+        (is (-> graph-post (graph/get-node (vault-file/id vault-file-from)) ::node/links (contains? (File. "to.png")))
             "The custom parser should include the link from the file (proving that it used the parser)")
         (is (= 1 (graph/node-count graph-post))
             "The resulting graph shall not contain any other node."))))
@@ -453,7 +453,7 @@
             graph-after   (graph/batch-sync-graph-with-vault graph-initial)]
         (is (= (::vault-file/last-modified-ms vault-file-after)
                (::vault-file/last-modified-ms
-                (graph/get-node graph-after (::vault-file/id vault-file-initial)))))
+                (graph/get-node graph-after (vault-file/id vault-file-initial)))))
         (is (= 1 (graph/node-count graph-after))))))
 
   (testing "Removes nodes after deleting files:"
@@ -471,9 +471,9 @@
         (helpers.vault-file/ensure-does-not-exist (vault-files 0) vault)
         (helpers.vault-file/ensure-does-not-exist (vault-files 1) vault)
         (let [graph-post (graph/batch-sync-graph-with-vault graph-pre)]
-          (is (not (graph/contains-node? graph-post (::vault-file/id (vault-files 0)))))
-          (is (not (graph/contains-node? graph-post (::vault-file/id (vault-files 1)))))
-          (is (graph/contains-node?      graph-post (::vault-file/id (vault-files 2))))
+          (is (not (graph/contains-node? graph-post (vault-file/id (vault-files 0)))))
+          (is (not (graph/contains-node? graph-post (vault-file/id (vault-files 1)))))
+          (is (graph/contains-node?      graph-post (vault-file/id (vault-files 2))))
           (is (= 1 (graph/node-count     graph-post)))))))
 
   (testing "Creating and deleting files:"
@@ -492,7 +492,7 @@
         (helpers.vault-file/ensure-exists         (vault-files 4) vault)
         (helpers.vault-file/ensure-exists         (vault-files 5) vault)
         (let [graph-ret (graph/batch-sync-graph-with-vault graph-arg)
-              ids       (mapv ::vault-file/id vault-files)]
+              ids       (mapv vault-file/id vault-files)]
           (is (not (graph/contains-node? graph-ret           (ids 0))))
           (is (not (graph/contains-node? graph-ret           (ids 1))))
           (is (node-remains-unchanged?   graph-ret graph-arg (ids 2)))

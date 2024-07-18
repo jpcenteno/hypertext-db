@@ -18,7 +18,7 @@
   [[k v]]
   (not (contains? v k)))
 
-(s/def ::t (s/and (s/map-of ::vault-file/id ::node/backlinks)
+(s/def ::t (s/and (s/map-of vault-file/id-spec ::node/backlinks)
                   #(every? value-does-not-contain-key? %)
                   #(not-any? empty? (vals %))))
 
@@ -27,7 +27,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef links?
-  :args (s/cat :backlinks ::t :from ::vault-file/id :to ::vault-file/id)
+  :args (s/cat :backlinks ::t :from vault-file/id? :to vault-file/id?)
   :ret  boolean?)
 (defn- links?
   [backlinks from to]
@@ -45,7 +45,7 @@
            backlinks)))
 
 (s/fdef add
-  :args (s/cat :backlinks ::t :from ::vault-file/id :to ::vault-file/id)
+  :args (s/cat :backlinks ::t :from vault-file/id? :to vault-file/id?)
   :ret  ::t
   :fn   (s/and #(let [ret  (:ret %)
                       from (-> % :args :from)
@@ -60,13 +60,13 @@
   :args (s/cat :backlinks ::t :node ::node/t)
   :ret  ::t
   :fn   (s/and #(let [ret  (:ret %)
-                      from (-> % :args :node ::vault-file/id)
+                      from (-> % :args :node vault-file/id)
                       tos  (-> % :args :node ::node/links)]
                   (every? (fn [to] (links? ret from to)) tos))))
 
 (defn add-from-node
   [backlinks node]
-  (let [from (::vault-file/id node)
+  (let [from (vault-file/id node)
         tos  (::node/links node)]
     (reduce (fn [backlinks to] (add backlinks from to))
             backlinks
@@ -86,7 +86,7 @@
      (f ret backlinks node)))
 
 (s/fdef remove-link
-  :args (s/cat :backlinks ::t :from ::vault-file/id :to ::vault-file/id)
+  :args (s/cat :backlinks ::t :from vault-file/id? :to vault-file/id?)
   :ret  ::t
   :fn   (s/or :contained     (s/and
                               (link-op-invariant-fn (fn [backlinks from to _ret] (links? backlinks from to)))
@@ -111,7 +111,7 @@
               (set/difference (->links-set backlinks) (-> node ::node/->links set))))))
 (defn remove-from-node
   [backlinks node]
-  (let [id-from   (::vault-file/id node)
+  (let [id-from   (vault-file/id node)
         reduce-fn (fn [backlinks id-to]
                     (let [set' (disj (get backlinks id-to) id-from)]
                       (if (empty? set')

@@ -21,14 +21,14 @@
     (testing "Links to self are invalid"
       (is (not (s/valid? ::node/t
                          (merge some-vault-file
-                                {::node/links     #{(::vault-file/id some-vault-file)}
+                                {::node/links     #{(vault-file/id some-vault-file)}
                                  ::node/backlinks #{}})))))
 
     (testing "Backlinks from self are invalid"
       (is (not (s/valid? ::node/t
                          (merge some-vault-file
                                 {::node/links     #{}
-                                 ::node/backlinks #{(::vault-file/id some-vault-file)}})))))))
+                                 ::node/backlinks #{(vault-file/id some-vault-file)}})))))))
 
 (deftest vault-file->
   (testing "`vault-file->` returns a node"

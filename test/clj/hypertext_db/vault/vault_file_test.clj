@@ -11,7 +11,7 @@
     (testing "When applied to a file with a well formed name"
       (let [file (File. "message-ceiling-tape-hobby.md")
             result (vault-file/file-> file)]
-        (is (= file (::vault-file/id result))))))
+        (is (= file (vault-file/id result))))))
 
   (testing "Sets `::last-modified-ms`"
     (testing "to `0` when not provided"
