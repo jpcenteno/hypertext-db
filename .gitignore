@@ -13,5 +13,5 @@ pom.xml.asc
 .nrepl-port
 .cpcache/
 .lsp/
-.clj-kondo/
+.clj-kondo/.cache
 /scratch/
