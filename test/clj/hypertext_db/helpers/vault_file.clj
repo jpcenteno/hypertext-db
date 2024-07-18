@@ -33,8 +33,6 @@
        (gen/such-that #(not= (::vault-file/last-modified-ms vault-file) %))
        (gen/fmap #(assoc vault-file ::vault-file/last-modified-ms %))))
 
-(class (updated-vault-file-generator nil))
-
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Utility functions                                                      ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
