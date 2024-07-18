@@ -20,7 +20,7 @@
   :ret  boolean?)
 (defn- can-parse?
   [vault-file]
-  (-> vault-file ::vault-file/id (str/ends-with? extension)))
+  (-> vault-file vault-file/id (str/ends-with? extension)))
 
 (s/fdef ->node
   :args (s/and (s/cat :vault-file ::vault-file/t :vault ::vault/t))

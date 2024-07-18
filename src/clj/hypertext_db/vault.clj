@@ -39,7 +39,7 @@
 (s/fdef absolute-file->relative-file
   :args (s/and (s/cat :vault ::t :absolute-file absolute-file?)
                #(contains-absolute-file? (:vault %) (:absolute-file %)))
-  :ret  ::vault-file/id
+  :ret  vault-file/id?
   :fn   #(= (-> % :args :absolute-file)
             (File. (-> % :args :vault ::dir) (-> % :ret str))))
 (defn absolute-file->relative-file
@@ -101,5 +101,5 @@
   "Opens a `vault-file` and returns a string with it's contents."
   [vault vault-file]
   (let [base (::dir vault)
-        relative (-> vault-file ::vault-file/id str)]
+        relative (-> vault-file vault-file/id str)]
     (slurp (File. base relative))))

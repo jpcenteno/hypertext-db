@@ -44,7 +44,7 @@
   "Returns a [[java.io.File]] for the `vault-file` at the `vault`."
   [vault-file vault]
   (let [base-path (::vault/dir vault)
-        rel-path  (::vault-file/id vault-file)]
+        rel-path  (vault-file/id vault-file)]
     (File. base-path (str rel-path))))
 
 (s/fdef ensure-exists
