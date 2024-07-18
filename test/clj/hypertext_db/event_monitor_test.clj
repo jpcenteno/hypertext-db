@@ -61,7 +61,21 @@
         (Thread/sleep 1000)
         (let [graph @graph-atom]
           (is (= 1 (graph/node-count graph)))
-          (is (graph/contains-node? graph (::vault-file/id vault-file))))))))
+          (is (graph/contains-node? graph (::vault-file/id vault-file)))))))
+
+  (testing "Updates a file"
+    (with-event-monitor [graph-atom (fixtures/graph-with-nodes-that-exist-in-vault)]
+      (let [initial-graph-state @graph-atom
+            some-vault-file     (-> initial-graph-state ::graph/nodes vals first)
+            some-vault-file'    (helpers.vault-file/generate-updated
+                                 some-vault-file
+                                 {:vault-to-write-to initial-graph-state})]
+        (Thread/sleep 1000) ; FIXME implement a function that insists until result or timeout.
+        (is (= (graph/node-count initial-graph-state)
+               (graph/node-count @graph-atom)))
+        (is (graph/contains-node? @graph-atom (::vault-file/id some-vault-file')))
+        (is (= (::vault-file/last-modified-ms some-vault-file')
+               (::vault-file/last-modified-ms (graph/get-node @graph-atom (::vault-file/id some-vault-file')))))))))
 
 ;; FIXME (deftest test-update-files)
 ;; FIXME (deftest test-delete-files)
