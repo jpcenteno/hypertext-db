@@ -27,13 +27,12 @@
   (testing "Returns a collection of all the vault-files in the top level directory"
     (is
      (tmp/with-tmp-dir
-       (let [vault        (vault/dir-> tmp/dir)
-             vault-file-1 (fixtures/vault-file-that-exists vault {::vault-file/id (File. "filename-1.md")})
-             vault-file-2 (fixtures/vault-file-that-exists vault {::vault-file/id (File. "filename-2.md")})
+       (let [vault        (fixtures/vault)
+             vault-files  (helpers.vault-file/generate-distinct 2 {:write-to-this-vault vault})
              result       (vault/list-vault-files vault)]
          (is (= 2 (count result)))
-         (is (contains? result vault-file-1))
-         (is (contains? result vault-file-2))))))
+         (is (contains? result (vault-files 0)))
+         (is (contains? result (vault-files 1)))))))
 
   (testing "Lists files under directories"
     (tmp/with-tmp-dir
