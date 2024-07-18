@@ -10,6 +10,7 @@
             [hypertext-db.event-monitor.hawk-specs :as hawk.specs]
             [hypertext-db.graph                    :as graph]
             [hypertext-db.specs.atom               :as s.atom]
+            [hypertext-db.specs.fn                 :as s.fn]
             [hypertext-db.vault                    :as vault])
   (:import (clojure.lang Atom)))
 
@@ -22,21 +23,6 @@
                     (s/keys :req [::hawk-watcher])))
 
 (s/def ::context- (s.atom/atom* ::t))
-
-; ╔════════════════════════════════════════════════════════════════════════╗
-; ║ Invariants and postconditions                                          ║
-; ╚════════════════════════════════════════════════════════════════════════╝
-
-(defn- invariant-returns-argument
-  "Returns a predicate which checks that the return value equals an argument."
-  [get-argument-fn]
-  #(= (:ret %) (get-argument-fn (:args %))))
-
-(defn- invariant-allowed-to-modify
-  "Invariant for a function which is only allowed to update some map keys."
-  [get-arg-fn ks]
-  #(= (apply dissoc (:ret %) ks)
-      (apply dissoc (-> % :args get-arg-fn) ks)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Basic observers                                                        ║
@@ -73,7 +59,7 @@
 (s/fdef start
   :args (s/and (s/cat :graph ::graph/t :graph-atom (s.atom/atom* ::graph/t)))
   :ret  ::t
-  :fn   (s/and (invariant-allowed-to-modify :graph [::hawk-watcher])))
+  :fn   (s.fn/allowed-keys :graph [::hawk-watcher]))
 (defn- start
   "Starts a file-system watcher and associates it to the graph."
   [graph graph-atom]
@@ -87,7 +73,7 @@
 (s/fdef stop
   :args (s/cat :graph ::graph/t)
   :ret  ::graph/t
-  :fn   (s/and (invariant-allowed-to-modify :graph [::hawk-watcher])))
+  :fn   (s.fn/allowed-keys :graph [::hawk-watcher]))
 (defn- stop
   "Stops any watcher attached to the graph, then dissocs it from the graph."
   [graph]
@@ -102,18 +88,16 @@
 
 (s/fdef start!
   :args (s/cat :graph-atom (s.atom/atom* ::graph/t))
-  :ret  (s.atom/atom* ::t)
-  :fn   (s/and (invariant-returns-argument :graph-atom)
-               #(not (stopped? (:ret %)))))
+  :ret  (s/and (s.atom/atom* ::t) (complement stopped?))
+  :fn   (s.fn/returns-argument :graph-atom))
 (defn start! [graph-atom]
   (swap! graph-atom start graph-atom)
   graph-atom)
 
 (s/fdef stop!
   :args (s/cat :graph-atom (s.atom/atom* ::graph/t))
-  :ret (s.atom/atom* ::graph/t)
-  :fn  (s/and (invariant-returns-argument :graph-atom)
-              #(stopped? (:ret %))))
+  :ret (s/and (s.atom/atom* ::graph/t) stopped?)
+  :fn  (s.fn/returns-argument :graph-atom))
 (defn stop!
   "Stops the watcher attached to the `graph-atom`."
   [graph-atom]
