@@ -14,12 +14,13 @@
   `(let [~name (atom (fixtures/graph-empty))]
      ~@body))
 
-(defmacro with-graph-atom-watched [name & body]
+(defmacro with-event-monitor [[name graph-constructor] & body]
   `(with-graph-atom ~name
-     (try
-       (event-monitor/start! ~name)
-       ~@body
-       (finally (event-monitor/stop! ~name)))))
+     (let [~name (atom ~graph-constructor)]
+       (try
+         (event-monitor/start! ~name)
+         ~@body
+         (finally (event-monitor/stop! ~name))))))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Tests                                                                  ║
@@ -54,7 +55,7 @@
 
 (deftest test-create-files
   (testing "Adds a file to the graph after its creation"
-    (with-graph-atom-watched graph-atom
+    (with-event-monitor [graph-atom (fixtures/graph-empty)]
       (let [vault-file (first (helpers.vault-file/generate-distinct 1))]
         (helpers.vault-file/ensure-exists vault-file @graph-atom)
         (Thread/sleep 1000)
