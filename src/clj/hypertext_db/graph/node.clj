@@ -7,15 +7,15 @@
 ; ║ Type specs                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(def ^:private id-set (s/coll-of ::vault-file/id :kind set?))
+(def ^:private id-set (s/coll-of vault-file/id-spec :kind set?))
 (s/def ::links     id-set)
 (s/def ::backlinks id-set)
 
 (s/def ::t (s/and (s/merge ::vault-file/t
                            (s/keys :req [::links ::backlinks]))
                   ;; Self-referential links are disallowed for simplicity sake.
-                  #(not (contains? (::links %) (::vault-file/id %)))
-                  #(not (contains? (::backlinks %) (::vault-file/id %)))))
+                  #(not (contains? (::links %) (vault-file/id %)))
+                  #(not (contains? (::backlinks %) (vault-file/id %)))))
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Constructor                                                            ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
@@ -36,9 +36,9 @@
 
 (s/fdef id
   :args (s/cat :node ::t)
-  :ret  ::vault-file/id
-  :fn   #(= (:ret %) (-> % :args :node ::vault-file/id)))
+  :ret  vault-file/id?
+  :fn   #(= (:ret %) (-> % :args :node vault-file/id)))
 (defn id
   "Returns the node id"
   [node]
-  (::vault-file/id node))
+  (vault-file/id node))
