@@ -17,7 +17,9 @@
        (not (.isAbsolute x))
        (not= (java.io.File. "") x)))
 
-(s/def ::id relative-file?)
+(def id? relative-file?)
+
+(s/def ::id id?)
 (s/def ::last-modified-ms (s/and int? #(<= 0 %)))
 
 (s/def ::t (s/keys :req [::id ::last-modified-ms]))
