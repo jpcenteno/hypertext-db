@@ -15,12 +15,11 @@
      ~@body))
 
 (defmacro with-event-monitor [[name graph-constructor] & body]
-  `(with-graph-atom ~name
-     (let [~name (atom ~graph-constructor)]
-       (try
-         (event-monitor/start! ~name)
-         ~@body
-         (finally (event-monitor/stop! ~name))))))
+  `(let [~name (atom ~graph-constructor)]
+     (try
+       (event-monitor/start! ~name)
+       ~@body
+       (finally (event-monitor/stop! ~name)))))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Tests                                                                  ║
