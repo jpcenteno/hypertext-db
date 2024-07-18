@@ -51,9 +51,9 @@
   (let [event-kind (:kind event)
         full-path  (:file event)]
     (case event-kind
-      :create (swap! graph-atom graph/upsert-node-given-full-path- full-path)
-      :modify (swap! graph-atom graph/upsert-node-given-full-path- full-path)
-      :delete (swap! graph-atom graph/remove-node-given-full-path- full-path))
+      :create (swap! graph-atom graph/upsert-node-from-full-path- full-path)
+      :modify (swap! graph-atom graph/upsert-node-from-full-path- full-path)
+      :delete (swap! graph-atom graph/remove-node-from-full-path- full-path))
     graph-atom))
 
 (s/fdef start

@@ -501,11 +501,11 @@
           (is (graph/contains-node?      graph-ret           (ids 5)))
           (is (= 4 (graph/node-count     graph-ret))))))))
 
-(deftest test-upsert-node-given-full-path-
+(deftest test-upsert-node-from-full-path-
   (testing "Does nothing provided a non-existing file"
     (let [graph-arg (fixtures/graph-empty)
           full-path (File. (::vault/dir graph-arg) "some-non-existing-file.txt")]
-      (is (= graph-arg (graph/upsert-node-given-full-path- graph-arg full-path)))))
+      (is (= graph-arg (graph/upsert-node-from-full-path- graph-arg full-path)))))
 
   (testing "Adds a new node (empty graph)"
     (let [graph-arg      (fixtures/graph-empty)
@@ -515,7 +515,7 @@
           absolute-file  (helpers.vault-file/java-file vault-file graph-arg)
           graph-expected (graph/add-node-from-vault-file graph-arg vault-file)]
       (is (= graph-expected
-             (graph/upsert-node-given-full-path-
+             (graph/upsert-node-from-full-path-
               graph-arg
               absolute-file)))))
 
@@ -526,7 +526,7 @@
                              (helpers.vault-file/ensure-exists graph-arg))
           absolute-file  (helpers.vault-file/java-file vault-file graph-arg)
           graph-expected (graph/add-node-from-vault-file graph-arg vault-file)
-          graph-ret      (graph/upsert-node-given-full-path- graph-arg absolute-file)]
+          graph-ret      (graph/upsert-node-from-full-path- graph-arg absolute-file)]
       (is (= graph-expected graph-ret))
       (is (= (inc (graph/node-count graph-arg)) (graph/node-count graph-ret)))))
 
@@ -538,4 +538,4 @@
                                {:write-to-this-vault input-graph})
           absolute-file       (helpers.vault-file/java-file updated-vault-file input-graph)]
       (is (= (graph/add-node-from-vault-file input-graph updated-vault-file)
-             (graph/upsert-node-given-full-path- input-graph absolute-file))))))
+             (graph/upsert-node-from-full-path- input-graph absolute-file))))))
