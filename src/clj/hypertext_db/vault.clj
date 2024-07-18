@@ -42,7 +42,7 @@
   :ret  ::vault-file/id
   :fn   #(= (-> % :args :absolute-file)
             (File. (-> % :args :vault ::dir) (-> % :ret str))))
-(defn- absolute-file->relative-file
+(defn absolute-file->relative-file
   "Returns a file with it's path relative to the `vault` base directory."
   [vault absolute-file]
   (-> (::dir vault)
