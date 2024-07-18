@@ -269,11 +269,11 @@
             (remove-nodes-that-no-longer-exist graph vault-files)
             vault-files)))
 
-(s/fdef upsert-node-given-full-path-
+(s/fdef upsert-node-from-full-path-
   :args (s/and (s/cat :graph ::t :absolute-file vault/absolute-file?)
                #(vault/contains-absolute-file? (:graph %) (:absolute-file %)))
   :ret ::t)
-(defn upsert-node-given-full-path-
+(defn upsert-node-from-full-path-
   "(Internal) upserts a node provided it's full path."
   [graph absolute-file]
   (if (.exists absolute-file)
@@ -282,10 +282,10 @@
      (vault/absolute-file->vault-file graph absolute-file))
     graph))
 
-(s/fdef remove-node-given-full-path-
+(s/fdef remove-node-from-full-path-
   :args (s/cat :graph ::t :absolute-file vault/absolute-file?)
   :ret ::t)
-(defn remove-node-given-full-path-
+(defn remove-node-from-full-path-
   "(Internal) removes a node associated with the `full-path`."
   [graph absolute-file]
   (let [id (vault/absolute-file->relative-file graph absolute-file)]
