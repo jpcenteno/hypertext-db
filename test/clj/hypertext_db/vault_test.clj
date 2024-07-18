@@ -64,15 +64,15 @@
           (spit file "Some text")
           (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
 
-(deftest test-absolute-file-in-vault?
+(deftest test-contains-absolute-file?
   (testing "Absolute file within the vault directory"
     (let [vault         (fixtures/vault)
           absolute-file (-> (helpers.vault-file/generate-distinct 1)
                             first
                             (helpers.vault-file/java-file vault))]
-      (is (vault/absolute-file-in-vault? vault absolute-file))))
+      (is (vault/contains-absolute-file? vault absolute-file))))
 
   (testing "Absolute file outside the vault directory"
-    (is (not (vault/absolute-file-in-vault?
+    (is (not (vault/contains-absolute-file?
               (fixtures/vault)
               (File. "/outside/the/vault.xyz"))))))

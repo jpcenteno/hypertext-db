@@ -271,7 +271,7 @@
 
 (s/fdef upsert-node-given-full-path-
   :args (s/and (s/cat :graph ::t :absolute-file vault/absolute-file?)
-               #(vault/absolute-file-in-vault? (:graph %) (:absolute-file %)))
+               #(vault/contains-absolute-file? (:graph %) (:absolute-file %)))
   :ret ::t)
 (defn upsert-node-given-full-path-
   "(Internal) upserts a node provided it's full path."

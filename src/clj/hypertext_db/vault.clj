@@ -18,10 +18,10 @@
 (defn absolute-file? [x]
   (and (file? x) (.isAbsolute x)))
 
-(s/fdef absolute-file-in-vault?
+(s/fdef contains-absolute-file?
   :args (s/cat :vault ::t :absolute-file absolute-file?)
   :ret  boolean?)
-(defn absolute-file-in-vault?
+(defn contains-absolute-file?
   [vault absolute-file]
   (str/starts-with?
    (.getCanonicalPath absolute-file)
@@ -38,7 +38,7 @@
 
 (s/fdef absolute-file->relative-file
   :args (s/and (s/cat :vault ::t :absolute-file absolute-file?)
-               #(absolute-file-in-vault? (:vault %) (:absolute-file %)))
+               #(contains-absolute-file? (:vault %) (:absolute-file %)))
   :ret  ::vault-file/id
   :fn   #(= (-> % :args :absolute-file)
             (File. (-> % :args :vault ::dir) (-> % :ret str))))
@@ -52,7 +52,7 @@
 
 (s/fdef absolute-file->vault-file
   :args (s/and (s/cat :vault ::t :absolute-file absolute-file?)
-               #(absolute-file-in-vault? (:vault %) (:absolute-file %)))
+               #(contains-absolute-file? (:vault %) (:absolute-file %)))
   :ret  ::vault-file/t)
 (defn absolute-file->vault-file
   "Casts an absolute file into a [[::vault-file/t]] relative to `vault`."
