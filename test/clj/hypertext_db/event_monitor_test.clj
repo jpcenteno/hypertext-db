@@ -67,7 +67,7 @@
     (with-event-monitor [graph-atom (fixtures/graph-with-nodes-that-exist-in-vault)]
       (let [initial-graph-state @graph-atom
             some-vault-file     (-> initial-graph-state ::graph/nodes vals first)
-            some-vault-file'    (helpers.vault-file/generate-updated
+            some-vault-file'    (helpers.vault-file/generate-updated-version
                                  some-vault-file
                                  {:vault-to-write-to initial-graph-state})]
         (Thread/sleep 1000) ; FIXME implement a function that insists until result or timeout.

@@ -92,11 +92,11 @@
 (defn generate-distinct-and-existing [n vault]
   (mapv #(ensure-exists % vault) (generate-distinct n)))
 
-(s/fdef generate-updated
+(s/fdef generate-updated-version
   :args (s/cat :vault-file ::vault-file/t
                :opts (s/keys :opt-un [::vault-to-write-to]))
   :ret  ::vault-file/t)
-(defn generate-updated
+(defn generate-updated-version
   "Returns an updated version of `vault-file` optionaly updating it on the vault storage.
 
   ## Parameters
