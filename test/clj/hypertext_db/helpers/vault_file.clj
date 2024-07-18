@@ -77,12 +77,19 @@
 ;;;; Generators
 
 (s/fdef generate-distinct
-  :args (s/cat :n pos-int?)
+  :args (s/cat :n pos-int? :opts (s/? map?))
   :ret  (s/coll-of ::vault-file/t :distinct true :kind vector?))
-(defn generate-distinct [n]
-  (first (gen/sample (gen/vector-distinct (s/gen ::vault-file/t)
-                                          {:num-elements n})
-                     1)))
+(defn generate-distinct
+  ([n]
+   (first (gen/sample (gen/vector-distinct (s/gen ::vault-file/t)
+                                           {:num-elements n})
+                      1)))
+  ([n {:keys [write-to-this-vault]}]
+   (let [vault-files (generate-distinct n)]
+     (when (some? write-to-this-vault)
+       (doseq [vault-file vault-files]
+         (ensure-exists vault-file write-to-this-vault))
+       vault-files))))
 
 (s/fdef generate-distinct-and-existing
   :args (s/cat :n pos-int? :vault ::vault/t)
