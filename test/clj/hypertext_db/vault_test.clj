@@ -65,14 +65,14 @@
           (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
 
 (deftest test-absolute-file-in-vault?
-  (testing "An absolute file inside the vault"
+  (testing "Absolute file within the vault directory"
     (let [vault         (fixtures/vault)
           absolute-file (-> (helpers.vault-file/generate-distinct 1)
                             first
                             (helpers.vault-file/java-file vault))]
       (is (vault/absolute-file-in-vault? vault absolute-file))))
 
-  (testing "An absolute file outside the vault"
+  (testing "Absolute file outside the vault directory"
     (is (not (vault/absolute-file-in-vault?
               (fixtures/vault)
               (File. "/outside/the/vault.xyz"))))))
