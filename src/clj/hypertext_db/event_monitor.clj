@@ -84,7 +84,6 @@
   :args (s/cat :context ::context- :event ::hawk.specs/event))
 (defn- handle-event
   [context event]
-  (println "context =" context)
   (let [graph-atom (::t-atom context)
         event-kind (:kind event)
         full-path  (:file event)]
