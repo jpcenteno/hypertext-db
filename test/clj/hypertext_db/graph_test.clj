@@ -7,7 +7,6 @@
             [clojure.test            :refer [deftest is testing]]
             [hypertext-db.graph            :as graph]
             [hypertext-db.graph.node       :as node]
-            [hypertext-db.graph.parser     :as graph.parser]
             [hypertext-db.helpers.tmp      :as tmp]
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file]

@@ -5,8 +5,7 @@
             [hypertext-db.graph.parser         :as parser]
             [hypertext-db.graph.backlinks-impl :as backlinks]
             [hypertext-db.vault            :as vault]
-            [hypertext-db.vault.vault-file :as vault-file])
-  (:import (java.io File)))
+            [hypertext-db.vault.vault-file :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Type specs : Graph attributes                                          ║
