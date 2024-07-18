@@ -78,7 +78,7 @@
                (::vault-file/last-modified-ms (graph/get-node @graph-atom (::vault-file/id some-vault-file')))))))))
 
 (deftest test-delete-files
-  (testing "Removes a node after it's file is deleted from the vault"
+  (testing "Removes a node after it's file has been deleted from the vault"
     (with-event-monitor [graph-atom (fixtures/graph-with-nodes-that-exist-in-vault)]
       (-> @graph-atom
           ::graph/nodes
