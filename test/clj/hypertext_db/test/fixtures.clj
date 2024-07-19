@@ -40,8 +40,8 @@
        (gen/fmap path/render-path) ; -> Path string
        (gen/fmap #(File. %)))) ; -> File
 
-(s/def ::vault-file/id
-  (s/with-gen ::vault-file/id
+(s/def ::vault-file/relative-path
+  (s/with-gen ::vault-file/relative-path
     (fn [] relative-file-generator)))
 
 (defn- generate-one
@@ -51,7 +51,7 @@
 ;;;; hypertext-db.vault.vault-file
 
 (defn id
-  ([]  (generate-one ::vault-file/id))
+  ([]  (generate-one ::vault-file/relative-path))
   ([s] (File. s)))
 
 (s/fdef vault-file :ret ::vault-file/t)
