@@ -31,9 +31,9 @@
 ;; [A] --> [B]
 
 (def ^:private node-b-id (fixtures/id "node-b.file"))
-(def ^:private node-b    (fixtures/node {::vault-file/id node-b-id ::node/links #{}}))
+(def ^:private node-b    (fixtures/node {::vault-file/relative-path node-b-id ::node/links #{}}))
 (def ^:private node-a-id (fixtures/id "node-a.file"))
-(def ^:private node-a    (fixtures/node {::vault-file/id node-a-id ::node/links #{node-b-id}}))
+(def ^:private node-a    (fixtures/node {::vault-file/relative-path node-a-id ::node/links #{node-b-id}}))
 
 (def ^:private node-a-without-links
   "A modified `node-a` without the link to `node-b`. Used for some of the
@@ -295,7 +295,7 @@
 
   (testing "Inserting a changed version of a node"
     (is (let [node  (fixtures/node)
-              node' (fixtures/node {::vault-file/id (node/id node)})
+              node' (fixtures/node {::vault-file/relative-path (node/id node)})
               graph (empty-graph)]
           (is (= (-> graph (graph/conj-node node'))
                  (-> graph (graph/conj-node node) (graph/conj-node node'))))))))
@@ -311,7 +311,7 @@
 (defspec conj-node-is-able-to-perform-updates 10
   (prop/for-all
    [node   (s/gen ::node/t)]
-   (is (let [node' (fixtures/node {::vault-file/id (node/id node)})
+   (is (let [node' (fixtures/node {::vault-file/relative-path (node/id node)})
              graph (empty-graph)]
          (is (= (graph/conj-node graph node')
                 (-> graph (graph/conj-node node) (graph/conj-node node'))))))))
@@ -337,7 +337,7 @@
   (testing "When provided an altered version of a node, removes the contained node with the same id"
     (is (let [graph (empty-graph)
               node  (fixtures/node)
-              node' (fixtures/node {::vault-file/id (node/id node)})]
+              node' (fixtures/node {::vault-file/relative-path (node/id node)})]
           (= graph
              (-> graph (graph/conj-node node) (graph/disj-node node')))))))
 
@@ -354,7 +354,7 @@
   (prop/for-all
    [node (s/gen ::node/t)]
    (is (let [graph (empty-graph)
-             node' (fixtures/node {::vault-file/id (node/id node)})]
+             node' (fixtures/node {::vault-file/relative-path (node/id node)})]
          (= graph
             (-> graph (graph/conj-node node) (graph/disj-node node')))))))
 

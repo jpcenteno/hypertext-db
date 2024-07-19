@@ -44,7 +44,7 @@
   :ret  ::vault-file/t)
 (defn create-vault-file
   [vault links]
-  (let [vault-file (update (fixtures/vault-file) ::vault-file/id (fn [f] (File.  (str f extension))))
+  (let [vault-file (update (fixtures/vault-file) ::vault-file/relative-path (fn [f] (File.  (str f extension))))
         file       (helpers.vault-file/java-file vault-file vault)
         content    (->> links (map str) (str/join "\n"))]
     (spit file content)

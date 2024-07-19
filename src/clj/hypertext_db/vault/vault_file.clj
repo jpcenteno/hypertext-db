@@ -19,12 +19,12 @@
 
 (def id? relative-file?)
 
-(s/def ::id id?)
+(s/def ::relative-path relative-file?)
 (s/def ::last-modified-ms (s/and int? #(<= 0 %)))
 
-(s/def ::t (s/keys :req [::id ::last-modified-ms]))
+(s/def ::t (s/keys :req [::relative-path ::last-modified-ms]))
 
-(def id-spec ::id)
+(def id-spec ::relative-path)
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Public: Basic observers                                                ║
@@ -33,7 +33,7 @@
 (defn id
   "Returns the unique identifier of the `vault-file`."
   [vault-file]
-  (::id vault-file))
+  (::relative-path vault-file))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Public: Constructors                                                   ║
@@ -43,7 +43,7 @@
   :args (s/alt :unary  (s/cat :file relative-file?)
                :binary (s/cat :file relative-file? :last-modified-ms ::last-modified-ms))
   :ret  ::t
-  :fn   (s/and #(= (-> % :ret ::id) (-> % :args second :file))
+  :fn   (s/and #(= (-> % :ret ::relative-path) (-> % :args second :file))
                #(= (-> % :ret ::last-modified-ms) (-> % :args second :last-modified-ms (or 0)))))
 (defn file->
   "Constructs a `::vault-file/t` representing a file in the vault directory.
@@ -54,5 +54,5 @@
   ([file]
    (file-> file 0))
   ([file last-modified-ms]
-   {::id file
+   {::relative-path file
     ::last-modified-ms last-modified-ms}))
