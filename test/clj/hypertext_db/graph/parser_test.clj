@@ -16,7 +16,7 @@
 
   (testing "Provided a parser in the chain"
     (is (let [vault           (fixtures/vault)
-              links           #{(File. "link-1.md") (File. "link-2.png")}
+              links           #{"link-1.md" "link-2.png"}
               vault-file-can  (simple-parser/create-vault-file vault links)
               vault-file-cant (fixtures/vault-file)
               parsers         [simple-parser/parser]]

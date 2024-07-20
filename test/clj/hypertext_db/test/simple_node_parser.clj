@@ -28,7 +28,7 @@
 (defn- ->node
   [vault-file vault]
   (let [content (vault/slurp-vault-file vault vault-file)
-        links   (->> content str/split-lines (map #(File. %)) set)]
+        links   (->> content str/split-lines set)]
     (-> vault-file node/vault-file-> (assoc ::node/links links))))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -41,10 +41,10 @@
 
 (s/fdef create-vault-file
   :args (s/cat :vault ::vault/t :links ::node/links)
-  :ret  ::vault-file/t)
+  :ret  (s/and ::vault-file/t can-parse?))
 (defn create-vault-file
   [vault links]
-  (let [vault-file (update (fixtures/vault-file) ::vault-file/relative-path (fn [f] (File.  (str f extension))))
+  (let [vault-file (helpers.vault-file/generate :ext extension :write-to-this-vault vault)
         file       (helpers.vault-file/java-file vault-file vault)
         content    (->> links (map str) (str/join "\n"))]
     (spit file content)
