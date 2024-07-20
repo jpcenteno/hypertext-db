@@ -36,13 +36,11 @@
 
 (defn- generator
   "`::vault-file/t` generator. Accepts optional overriding `attrs`."
-  ([]
-   (generator {}))
-  ([{:keys [attrs ext]}]
-   (->> (s/gen         ::vault-file/t)
-        (gen/fmap      #(update % ::vault-file/relative-path replace-ext ext))
-        (gen/fmap      #(merge % attrs))
-        (gen/such-that #(s/valid? ::vault-file/t %)))))
+  [{:keys [attrs ext]}]
+  (->> (s/gen         ::vault-file/t)
+       (gen/fmap      #(update % ::vault-file/relative-path replace-ext ext))
+       (gen/fmap      #(merge % attrs))
+       (gen/such-that #(s/valid? ::vault-file/t %))))
 
 (s/fdef updated-vault-file-generator
   :args (s/cat :vault-file ::vault-file/t))
