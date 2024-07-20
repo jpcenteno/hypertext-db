@@ -427,11 +427,11 @@
 
     (testing "Adds a node to an empty graph with a custom parser"
       (let [graph-pre       (graph/set-parsers (fixtures/graph-empty)  [simple-parser/parser])
-            vault-file-from (simple-parser/create-vault-file graph-pre #{(File. "to.png")})
+            vault-file-from (simple-parser/create-vault-file graph-pre #{"to.png"})
             graph-post      (graph/batch-sync-graph-with-vault graph-pre)]
         (is (graph/contains-node? graph-post (vault-file/id vault-file-from))
             "The returned graph should contain the node associated to the new file")
-        (is (-> graph-post (graph/get-node (vault-file/id vault-file-from)) ::node/links (contains? (File. "to.png")))
+        (is (-> graph-post (graph/get-node (vault-file/id vault-file-from)) ::node/links (contains? "to.png"))
             "The custom parser should include the link from the file (proving that it used the parser)")
         (is (= 1 (graph/node-count graph-post))
             "The resulting graph shall not contain any other node."))))
