@@ -19,12 +19,12 @@
 
 (s/fdef mkdirs
   :args (s/cat :vault ::vault/t :subdirectories ::subdirectories))
-(defn mkdirs
+(defn- mkdirs
   [vault & relative-paths]
   (doseq [x relative-paths]
     (.mkdirs (File. (::vault/dir vault) x))))
 
-(defn touch
+(defn- touch
   ([vault & vault-files]
    (doseq [x vault-files]
      (h.vault-file/ensure-exists x vault))))
