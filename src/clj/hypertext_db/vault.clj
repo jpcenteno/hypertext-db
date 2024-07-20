@@ -1,7 +1,6 @@
 (ns hypertext-db.vault
   (:require [clojure.spec.alpha :as s]
             [clojure.string :as str]
-            [pathetic.core :as path]
             [hypertext-db.vault.vault-file :as vault-file])
   (:import (java.io File)))
 
