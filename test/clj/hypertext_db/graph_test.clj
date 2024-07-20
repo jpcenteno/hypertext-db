@@ -379,7 +379,7 @@
     (is (let [graph           (-> (fixtures/vault) graph/vault-> (graph/set-parsers [simple-parser/parser]))]
 
           (testing "and a `::vault-file/t` that the parser CAN parse"
-            (is (let [links       #{(File. "foo.md") (File. "bar.png")}
+            (is (let [links       #{"foo.md" "bar.png"}
                       vault-file  (simple-parser/create-vault-file graph links)
                       id          (vault-file/id vault-file)
                       graph-after (graph/add-node-from-vault-file graph vault-file)]
