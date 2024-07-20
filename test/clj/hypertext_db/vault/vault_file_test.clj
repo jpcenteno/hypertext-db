@@ -1,23 +1,32 @@
 (ns hypertext-db.vault.vault-file-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [hypertext-db.vault.vault-file :as vault-file])
-  (:import (java.io File)))
+  (:require [clojure.spec.alpha :as s]
+            [clojure.test :refer [deftest is testing]]
+            [hypertext-db.vault.vault-file :as vault-file]))
 
-(def test-file (File. "iron-clap-syrup-cruise.tar.bz2"))
+(defn valid-relative-path? [x]
+  (s/valid? ::vault-file/relative-path x))
+
+(deftest relative-file-spec
+  (is (valid-relative-path?      "a/b.c")     "Valid path.")
+  (is (valid-relative-path?      "a/.b.c")    "Hidden files are legit.")
+  (is (not (valid-relative-path? ""))         "No empty paths!")
+  (is (not (valid-relative-path? "/foo/bar")) "No absolute paths!")
+  (is (not (valid-relative-path? "a/../b"))   "No un-normalized paths!")
+  (is (not (valid-relative-path? "../a"))     "No paths outside base dir!"))
 
 (deftest file->
 
   (testing "Sets ::id correctly"
     (testing "When applied to a file with a well formed name"
-      (let [file (File. "message-ceiling-tape-hobby.md")
+      (let [file "message-ceiling-tape-hobby.md"
             result (vault-file/file-> file)]
         (is (= file (vault-file/id result))))))
 
   (testing "Sets `::last-modified-ms`"
     (testing "to `0` when not provided"
-      (is (zero? (-> test-file vault-file/file-> ::vault-file/last-modified-ms))))
+      (is (zero? (-> "some filename.txt" vault-file/file-> ::vault-file/last-modified-ms))))
 
     (testing "to the provided value when given one"
       (let [last-modified-ms 12345
-            result (vault-file/file-> test-file last-modified-ms)]
+            result (vault-file/file-> "some filename.txt" last-modified-ms)]
         (is (= last-modified-ms (::vault-file/last-modified-ms result)))))))

@@ -7,7 +7,8 @@
             [hypertext-db.vault.vault-file :as vault-file]
             [hypertext-db.graph :as graph]
             [hypertext-db.helpers.vault-file :as helpers.vault-file])
-  (:import (java.io File)))
+  (:import (java.io File)
+           (java.nio.file Paths)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Private helpers                                                        ║
@@ -35,14 +36,16 @@
     #(gen/fmap (fn [_] (create-a-temporary-directory))
                (gen/return 0))))
 
-(def ^:private relative-file-generator
-  (->> (s/gen (s/+ (s/and string? #(not= "" %)))) ; -> Path stems
-       (gen/fmap path/render-path) ; -> Path string
-       (gen/fmap #(File. %)))) ; -> File
+(def ^:private vault-file-relative-path-generator
+  (->> (gen/vector    (gen/such-that #(not= "" %) (gen/string-ascii)))
+       (gen/such-that seq) ; Non-empty
+       (gen/fmap      #(Paths/get "" (into-array %)))
+       (gen/fmap      #(.normalize %))
+       (gen/fmap      str)))
 
 (s/def ::vault-file/relative-path
   (s/with-gen ::vault-file/relative-path
-    (fn [] relative-file-generator)))
+    (fn [] vault-file-relative-path-generator)))
 
 (defn- generate-one
   [spec]
@@ -52,7 +55,7 @@
 
 (defn id
   ([]  (generate-one ::vault-file/relative-path))
-  ([s] (File. s)))
+  ([s] s))
 
 (s/fdef vault-file :ret ::vault-file/t)
 (defn vault-file

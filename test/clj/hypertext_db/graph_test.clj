@@ -30,9 +30,9 @@
 ;;
 ;; [A] --> [B]
 
-(def ^:private node-b-id (fixtures/id "node-b.file"))
+(def ^:private node-b-id "node-b.file")
 (def ^:private node-b    (fixtures/node {::vault-file/relative-path node-b-id ::node/links #{}}))
-(def ^:private node-a-id (fixtures/id "node-a.file"))
+(def ^:private node-a-id "node-a.file")
 (def ^:private node-a    (fixtures/node {::vault-file/relative-path node-a-id ::node/links #{node-b-id}}))
 
 (def ^:private node-a-without-links
