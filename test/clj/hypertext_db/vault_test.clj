@@ -51,8 +51,8 @@
 
 (deftest test-slurp-vault-file
   (testing "Reads content from a vault file"
-    (is (let [vault      (fixtures/vault)
-              vault-file (fixtures/vault-file)]
+    (is (let [vault-file (fixtures/vault-file)
+              vault      (helpers.vault/generate :vault-files [vault-file])]
           (spit (helpers.vault-file/java-file vault-file vault) "Some text")
           (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
 
