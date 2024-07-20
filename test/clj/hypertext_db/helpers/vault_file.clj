@@ -16,6 +16,15 @@
 ; ║ Generators                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
+(defn- generator
+  "`::vault-file/t` generator. Accepts optional overriding `attrs`."
+  ([]
+   (generator {}))
+  ([attrs]
+   (->> (s/gen         ::vault-file/t)
+        (gen/fmap      #(merge % attrs))
+        (gen/such-that #(s/valid? ::vault-file/t %)))))
+
 (s/fdef updated-vault-file-generator
   :args (s/cat :vault-file ::vault-file/t))
 (defn- updated-vault-file-generator
@@ -75,6 +84,13 @@
   vault-file)
 
 ;;;; Generators
+
+(defn generate
+  [& {:keys [attrs write-to-this-vault]}]
+  (let [vault-file (rand-nth (gen/sample (generator attrs)))]
+    (if write-to-this-vault
+      (ensure-exists vault-file write-to-this-vault)
+      vault-file)))
 
 (s/fdef generate-distinct
   :args (s/cat :n pos-int? :opts (s/? map?))

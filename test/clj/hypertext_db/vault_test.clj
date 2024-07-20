@@ -4,6 +4,7 @@
             [hypertext-db.test.fixtures :as fixtures]
             [hypertext-db.vault :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
+            [hypertext-db.helpers.vault      :as helpers.vault]
             [hypertext-db.helpers.vault-file :as helpers.vault-file]
             [clojure.spec.alpha :as s])
   (:import (java.io File)))
@@ -14,30 +15,27 @@
 
 (deftest dir->
   (testing "Creates a ::hypertext-db.vault instance"
-    (tmp/with-tmp-dir
-      (is (s/valid? ::vault/t (vault/dir-> tmp/dir))))))
+    (is (s/valid? ::vault/t (vault/dir-> (fixtures/create-a-temporary-directory))))))
 
 (deftest list-vault-files
 
   (testing "Returns an empty collection when the vault directory is empty"
-    (tmp/with-tmp-dir
-      (let [vault (vault/dir-> tmp/dir)]
-        (is (empty? (vault/list-vault-files vault))))))
+    (is (empty? (vault/list-vault-files (fixtures/vault)))))
 
   (testing "Returns a collection of all the vault-files at the top level directory"
-    (is
-     (tmp/with-tmp-dir
-       (let [vault        (fixtures/vault)
-             vault-files  (helpers.vault-file/generate-distinct 2 {:write-to-this-vault vault})
-             result       (vault/list-vault-files vault)]
-         (is (= 2 (count result)))
-         (is (contains? result (vault-files 0)))
-         (is (contains? result (vault-files 1)))))))
+    (is (let [vault        (fixtures/vault)
+              vault-file-1 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "1"}
+                                                        :write-to-this-vault vault)
+              vault-file-2 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "2"}
+                                                        :write-to-this-vault vault)
+              result       (vault/list-vault-files vault)]
+          (is (= 2 (count result)))
+          (is (contains? result vault-file-1))
+          (is (contains? result vault-file-2)))))
 
   (testing "Lists files under directories"
-    (is (let [vault      (fixtures/vault)
-              attrs      {::vault-file/relative-path "subdir/test-file-in-subdirectory.md"}
-              vault-file (fixtures/vault-file-that-exists vault attrs)]
+    (is (let [vault-file (helpers.vault-file/generate :atrrs {::vault-file/relative-path "foo/bar.txt"})
+              vault      (helpers.vault/generate :vault-files [vault-file])]
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Lists hidden filenames"
@@ -47,11 +45,9 @@
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Ignores directories"
-    (tmp/with-tmp-dir
-      (let [vault (vault/dir-> tmp/dir)
-            _     (doto (File. tmp/dir "firm-popular-carpet-tree")
-                    (.mkdir))]
-        (is (empty? (vault/list-vault-files vault)))))))
+    (is (let [vault (fixtures/vault)]
+          (helpers.vault/make-subdirectory vault "some-subdirectory")
+          (empty? (vault/list-vault-files vault))))))
 
 (deftest test-slurp-vault-file
   (testing "Reads content from a vault file"

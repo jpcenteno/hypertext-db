@@ -14,7 +14,7 @@
 ; ║ Private helpers                                                        ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(defn- create-a-temporary-directory
+(defn create-a-temporary-directory
   "Creates a temporary directory that will be deleted when the java VM running
   the tests terminates.
 
