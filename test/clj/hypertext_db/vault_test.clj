@@ -1,6 +1,5 @@
 (ns hypertext-db.vault-test
   (:require [clojure.test :refer [deftest is testing]]
-            [hypertext-db.helpers.tmp :as tmp]
             [hypertext-db.test.fixtures :as fixtures]
             [hypertext-db.vault :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
@@ -23,11 +22,9 @@
     (is (empty? (vault/list-vault-files (helpers.vault/generate)))))
 
   (testing "Returns a collection of all the vault-files at the top level directory"
-    (is (let [vault        (helpers.vault/generate)
-              vault-file-1 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "1"}
-                                                        :write-to-this-vault vault)
-              vault-file-2 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "2"}
-                                                        :write-to-this-vault vault)
+    (is (let [vault-file-1 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "1"})
+              vault-file-2 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "2"})
+              vault        (helpers.vault/generate {:vault-files [vault-file-1 vault-file-2]})
               result       (vault/list-vault-files vault)]
           (is (= 2 (count result)))
           (is (contains? result vault-file-1))
@@ -35,7 +32,7 @@
 
   (testing "Lists files under directories"
     (is (let [vault-file (helpers.vault-file/generate :atrrs {::vault-file/relative-path "foo/bar.txt"})
-              vault      (helpers.vault/generate :vault-files [vault-file])]
+              vault      (helpers.vault/generate {:vault-files [vault-file]})]
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Lists hidden filenames"
@@ -45,13 +42,13 @@
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Ignores directories"
-    (is (let [vault (helpers.vault/generate :subdirectories "dir")]
+    (is (let [vault (helpers.vault/generate {:subdirectories ["dir"]})]
           (empty? (vault/list-vault-files vault))))))
 
 (deftest test-slurp-vault-file
   (testing "Reads content from a vault file"
     (is (let [vault-file (fixtures/vault-file)
-              vault      (helpers.vault/generate :vault-files [vault-file])]
+              vault      (helpers.vault/generate {:vault-files [vault-file]})]
           (spit (helpers.vault-file/java-file vault-file vault) "Some text")
           (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
 

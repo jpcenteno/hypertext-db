@@ -7,13 +7,19 @@
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
+; ║ Specs for parameters                                                   ║
+; ╚════════════════════════════════════════════════════════════════════════╝
+
+(s/def ::vault-files    (s/* ::vault-file/t))
+(s/def ::subdirectories (s/* ::vault-file/relative-path))
+
+; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Utility functions                                                      ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
-(s/fdef make-subdirectory
-  :args (s/cat :vault ::vault/t :relative-paths (s/* ::vault-file/relative-path)))
-(defn make-subdirectory
-  "Create a subdirectory at the vault directory."
+(s/fdef mkdirs
+  :args (s/cat :vault ::vault/t :subdirectories ::subdirectories))
+(defn mkdirs
   [vault & relative-paths]
   (doseq [x relative-paths]
     (.mkdirs (File. (::vault/dir vault) x))))
@@ -28,15 +34,14 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef generate
+  :args (s/cat :keys (s/? (s/keys :opt-un [::vault-files ::subdirectories])))
   :ret ::vault/t)
-
 (defn generate
   "Generates a vault"
   ([]
    (first (gen/sample (s/gen ::vault/t))))
-  ([& {:keys [vault-files subdirectories]}]
-   (println "vault-files =" vault-files)
+  ([{:keys [vault-files subdirectories]}]
    (let [vault (generate)]
-     (apply make-subdirectory vault subdirectories)
+     (apply mkdirs vault subdirectories)
      (apply touch vault vault-files)
      vault)))
