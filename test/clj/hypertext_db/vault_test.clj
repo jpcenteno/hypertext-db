@@ -20,10 +20,10 @@
 (deftest list-vault-files
 
   (testing "Returns an empty collection when the vault directory is empty"
-    (is (empty? (vault/list-vault-files (fixtures/vault)))))
+    (is (empty? (vault/list-vault-files (helpers.vault/generate)))))
 
   (testing "Returns a collection of all the vault-files at the top level directory"
-    (is (let [vault        (fixtures/vault)
+    (is (let [vault        (helpers.vault/generate)
               vault-file-1 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "1"}
                                                         :write-to-this-vault vault)
               vault-file-2 (helpers.vault-file/generate :atrrs {::vault-file/relative-path "2"}
@@ -39,13 +39,13 @@
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Lists hidden filenames"
-    (is (let [vault      (fixtures/vault)
+    (is (let [vault      (helpers.vault/generate)
               attrs      {::vault-file/relative-path ".im-a-hidden-test-file.exe"}
               vault-file (fixtures/vault-file-that-exists vault attrs)]
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Ignores directories"
-    (is (let [vault (fixtures/vault)]
+    (is (let [vault (helpers.vault/generate)]
           (helpers.vault/make-subdirectory vault "some-subdirectory")
           (empty? (vault/list-vault-files vault))))))
 
@@ -58,7 +58,7 @@
 
 (deftest test-contains-absolute-file?
   (testing "Absolute file within the vault directory"
-    (is (let [vault         (fixtures/vault)
+    (is (let [vault         (helpers.vault/generate)
               absolute-file (-> (helpers.vault-file/generate-distinct 1)
                                 first
                                 (helpers.vault-file/java-file vault))]
@@ -66,5 +66,5 @@
 
   (testing "Absolute file outside the vault directory"
     (is (not (vault/contains-absolute-file?
-              (fixtures/vault)
+              (helpers.vault/generate)
               (File. "/outside/the/vault.xyz"))))))
