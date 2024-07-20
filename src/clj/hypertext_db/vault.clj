@@ -78,7 +78,7 @@
   :ret ::vault-file/t)
 (defn- stat-file
   [vault file]
-  (let [relative-path    (path/relativize (::dir vault) file)
+  (let [relative-path    (absolute-file->relative-file vault file)
         last-modified-ms (.lastModified file)]
     (vault-file/file-> relative-path
                        last-modified-ms)))
@@ -102,5 +102,5 @@
   "Opens a `vault-file` and returns a string with it's contents."
   [vault vault-file]
   (let [base (::dir vault)
-        relative (-> vault-file vault-file/id str)]
+        relative (-> vault-file vault-file/id)]
     (slurp (File. base relative))))
