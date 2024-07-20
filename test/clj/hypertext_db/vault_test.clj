@@ -24,7 +24,7 @@
       (let [vault (vault/dir-> tmp/dir)]
         (is (empty? (vault/list-vault-files vault))))))
 
-  (testing "Returns a collection of all the vault-files in the top level directory"
+  (testing "Returns a collection of all the vault-files at the top level directory"
     (is
      (tmp/with-tmp-dir
        (let [vault        (fixtures/vault)
@@ -35,18 +35,16 @@
          (is (contains? result (vault-files 1)))))))
 
   (testing "Lists files under directories"
-    (tmp/with-tmp-dir
-      (let [vault      (fixtures/vault)
-            attrs      {::vault-file/relative-path (File. "subdir/test-file-in-subdirectory.md")}
-            vault-file (fixtures/vault-file-that-exists vault attrs)]
-        (is (contains? (vault/list-vault-files vault) vault-file)))))
+    (is (let [vault      (fixtures/vault)
+              attrs      {::vault-file/relative-path "subdir/test-file-in-subdirectory.md"}
+              vault-file (fixtures/vault-file-that-exists vault attrs)]
+          (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Lists hidden filenames"
-    (is (tmp/with-tmp-dir
-          (let [vault      (fixtures/vault)
-                attrs      {::vault-file/relative-path (File. ".im-a-hidden-test-file.exe")}
-                vault-file (fixtures/vault-file-that-exists vault attrs)]
-            (is (contains? (vault/list-vault-files vault) vault-file))))))
+    (is (let [vault      (fixtures/vault)
+              attrs      {::vault-file/relative-path ".im-a-hidden-test-file.exe"}
+              vault-file (fixtures/vault-file-that-exists vault attrs)]
+          (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Ignores directories"
     (tmp/with-tmp-dir
@@ -58,18 +56,17 @@
 (deftest test-slurp-vault-file
   (testing "Reads content from a vault file"
     (is (let [vault      (fixtures/vault)
-              vault-file (fixtures/vault-file)
-              file         (File. (::vault/dir vault) (-> vault-file ::vault-file/relative-path str))]
-          (spit file "Some text")
+              vault-file (fixtures/vault-file)]
+          (spit (helpers.vault-file/java-file vault-file vault) "Some text")
           (is (= "Some text" (vault/slurp-vault-file vault vault-file)))))))
 
 (deftest test-contains-absolute-file?
   (testing "Absolute file within the vault directory"
-    (let [vault         (fixtures/vault)
-          absolute-file (-> (helpers.vault-file/generate-distinct 1)
-                            first
-                            (helpers.vault-file/java-file vault))]
-      (is (vault/contains-absolute-file? vault absolute-file))))
+    (is (let [vault         (fixtures/vault)
+              absolute-file (-> (helpers.vault-file/generate-distinct 1)
+                                first
+                                (helpers.vault-file/java-file vault))]
+          (is (vault/contains-absolute-file? vault absolute-file)))))
 
   (testing "Absolute file outside the vault directory"
     (is (not (vault/contains-absolute-file?

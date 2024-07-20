@@ -72,6 +72,7 @@
   [dir]
   {::dir dir})
 
+;; FIXME This function's name does not reflect what it does.
 (s/fdef stat-file
   :args (s/cat :vault ::t :file file?)
   :ret ::vault-file/t)
@@ -79,7 +80,7 @@
   [vault file]
   (let [relative-path    (path/relativize (::dir vault) file)
         last-modified-ms (.lastModified file)]
-    (vault-file/file-> (File. relative-path)
+    (vault-file/file-> relative-path
                        last-modified-ms)))
 
 (s/fdef list-vault-files
