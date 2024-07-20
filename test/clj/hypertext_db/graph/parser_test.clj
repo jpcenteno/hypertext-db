@@ -3,8 +3,7 @@
             [hypertext-db.graph.node                              :as node]
             [hypertext-db.graph.parser                            :as parser]
             [hypertext-db.test.fixtures                           :as fixtures]
-            [hypertext-db.test.simple-node-parser                 :as simple-parser])
-  (:import (java.io File)))
+            [hypertext-db.test.simple-node-parser                 :as simple-parser]))
 
 (deftest test-parse
   (testing "Provided an empty `::parser/parser-chain` and a random `::vault-file/t`"

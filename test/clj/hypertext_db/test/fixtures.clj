@@ -1,14 +1,12 @@
 (ns hypertext-db.test.fixtures
   (:require [clojure.spec.alpha      :as s]
             [clojure.spec.gen.alpha  :as gen]
-            [pathetic.core           :as path]
             [hypertext-db.graph.node       :as node]
             [hypertext-db.vault            :as vault]
             [hypertext-db.vault.vault-file :as vault-file]
             [hypertext-db.graph :as graph]
             [hypertext-db.helpers.vault-file :as helpers.vault-file])
-  (:import (java.io File)
-           (java.nio.file Paths)))
+  (:import (java.nio.file Paths)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Private helpers                                                        ║

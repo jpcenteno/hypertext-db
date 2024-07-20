@@ -3,11 +3,9 @@
             [clojure.string                  :as str]
             [hypertext-db.graph.node         :as node]
             [hypertext-db.graph.parser       :as parser]
-            [hypertext-db.test.fixtures      :as fixtures]
             [hypertext-db.helpers.vault-file :as helpers.vault-file]
             [hypertext-db.vault              :as vault]
-            [hypertext-db.vault.vault-file   :as vault-file])
-  (:import (java.io File)))
+            [hypertext-db.vault.vault-file   :as vault-file]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Implementation internals                                               ║
