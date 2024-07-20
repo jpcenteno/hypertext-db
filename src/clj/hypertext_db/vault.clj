@@ -48,7 +48,7 @@
   (-> (::dir vault)
       .toPath
       (.relativize (.toPath absolute-file))
-      .toFile))
+      str))
 
 (s/fdef absolute-file->vault-file
   :args (s/and (s/cat :vault ::t :absolute-file absolute-file?)
