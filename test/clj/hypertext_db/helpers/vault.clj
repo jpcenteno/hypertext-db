@@ -36,5 +36,5 @@
   ([& {:keys [vault-files]}]
    (println "vault-files =" vault-files)
    (let [vault (generate)]
-     (doseq [vault-file vault-files] (h.vault-file/ensure-exists vault-file vault))
+     (apply touch vault vault-files)
      vault)))
