@@ -1,10 +1,22 @@
 (ns hypertext-db.vault.vault-file-test
   (:require [clojure.spec.alpha :as s]
             [clojure.test :refer [deftest is testing]]
-            [hypertext-db.vault.vault-file :as vault-file]))
+            [hypertext-db.vault.vault-file   :as vault-file]
+            [hypertext-db.helpers.vault-file :as h.vault-file]))
 
 (defn valid-relative-path? [x]
   (s/valid? ::vault-file/relative-path x))
+
+(deftest test-helper-replace-ext
+  (is (= "a.ext"      (#'h.vault-file/replace-ext "a"          "ext")))
+  (is (= "a.ext"      (#'h.vault-file/replace-ext "a.b"        "ext")))
+  (is (= "a.ext"      (#'h.vault-file/replace-ext "a.b.c"      "ext")))
+  (is (= "/dir/a.ext" (#'h.vault-file/replace-ext "/dir/a"     "ext")))
+  (is (= "/dir/a.ext" (#'h.vault-file/replace-ext "/dir/a.b"   "ext")))
+  (is (= "/dir/a.ext" (#'h.vault-file/replace-ext "/dir/a.b.c" "ext")))
+  (is (= "/x.y/a.ext" (#'h.vault-file/replace-ext "/x.y/a"     "ext")))
+  (is (= "/x.y/a.ext" (#'h.vault-file/replace-ext "/x.y/a.b"   "ext")))
+  (is (= "/x.y/a.ext" (#'h.vault-file/replace-ext "/x.y/a.b.c" "ext"))))
 
 (deftest relative-file-spec
   (is (valid-relative-path?      "a/b.c")     "Valid path.")

@@ -3,7 +3,8 @@
   (:require [clojure.spec.alpha            :as s]
             [clojure.spec.gen.alpha        :as gen]
             [hypertext-db.vault            :as vault]
-            [hypertext-db.vault.vault-file :as vault-file])
+            [hypertext-db.vault.vault-file :as vault-file]
+            [clojure.string :as str])
   (:import (java.io File)))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
@@ -16,12 +17,30 @@
 ; ║ Generators                                                             ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
+(s/fdef remove-ext
+  :args (s/cat :path string?)
+  :ret string?)
+(defn- remove-ext
+  [path]
+  (let [last-stub-index (or (str/last-index-of path \/) 0)
+        extension-index (or (str/index-of path \. last-stub-index) (count path))]
+    (subs path 0 extension-index)))
+
+(s/fdef replace-ext
+  :args (s/cat :path string? :ext (s/nilable string?))
+  :ret  string?)
+(defn- replace-ext [path ext]
+  (if (some? ext)
+    (str (remove-ext path) "." ext)
+    path))
+
 (defn- generator
   "`::vault-file/t` generator. Accepts optional overriding `attrs`."
   ([]
    (generator {}))
-  ([attrs]
+  ([{:keys [attrs ext]}]
    (->> (s/gen         ::vault-file/t)
+        (gen/fmap      #(update % ::vault-file/relative-path replace-ext ext))
         (gen/fmap      #(merge % attrs))
         (gen/such-that #(s/valid? ::vault-file/t %)))))
 
@@ -86,8 +105,8 @@
 ;;;; Generators
 
 (defn generate
-  [& {:keys [attrs write-to-this-vault]}]
-  (let [vault-file (rand-nth (gen/sample (generator attrs)))]
+  [& {:keys [attrs ext write-to-this-vault]}]
+  (let [vault-file (rand-nth (gen/sample (generator {:attrs attrs :ext ext})))]
     (if write-to-this-vault
       (ensure-exists vault-file write-to-this-vault)
       vault-file)))
