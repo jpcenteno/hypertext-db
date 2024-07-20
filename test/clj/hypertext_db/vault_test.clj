@@ -45,8 +45,7 @@
           (is (contains? (vault/list-vault-files vault) vault-file)))))
 
   (testing "Ignores directories"
-    (is (let [vault (helpers.vault/generate)]
-          (helpers.vault/make-subdirectory vault "some-subdirectory")
+    (is (let [vault (helpers.vault/generate :subdirectories "dir")]
           (empty? (vault/list-vault-files vault))))))
 
 (deftest test-slurp-vault-file

@@ -11,11 +11,12 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef make-subdirectory
-  :args (s/cat :vault ::vault/t :relative-path ::vault-file/relative-path))
+  :args (s/cat :vault ::vault/t :relative-paths (s/* ::vault-file/relative-path)))
 (defn make-subdirectory
   "Create a subdirectory at the vault directory."
-  [vault relative-path]
-  (.mkdirs (File. (::vault/dir vault) relative-path)))
+  [vault & relative-paths]
+  (doseq [x relative-paths]
+    (.mkdirs (File. (::vault/dir vault) x))))
 
 (defn touch
   ([vault & vault-files]
@@ -33,8 +34,9 @@
   "Generates a vault"
   ([]
    (first (gen/sample (s/gen ::vault/t))))
-  ([& {:keys [vault-files]}]
+  ([& {:keys [vault-files subdirectories]}]
    (println "vault-files =" vault-files)
    (let [vault (generate)]
+     (apply make-subdirectory vault subdirectories)
      (apply touch vault vault-files)
      vault)))
