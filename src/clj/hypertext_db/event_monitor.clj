@@ -22,8 +22,6 @@
 (s/def ::t (s/merge ::graph/t
                     (s/keys :req [::hawk-watcher])))
 
-(s/def ::context- (s.atom/atom* ::t))
-
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Basic observers                                                        ║
 ; ╚════════════════════════════════════════════════════════════════════════╝
@@ -45,7 +43,7 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef handle-event
-  :args (s/cat :graph-atom ::context- :event ::hawk.specs/event))
+  :args (s/cat :graph-atom (s.atom/atom* ::graph/t) :event ::hawk.specs/event))
 (defn- handle-event
   [graph-atom event]
   (let [event-kind (:kind event)
