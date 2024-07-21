@@ -13,8 +13,7 @@
             [hypertext-db.graph.backlinks-impl :as backlinks]
             [hypertext-db.test.fixtures :as fixtures]
             [hypertext-db.helpers.vault-file :as helpers.vault-file]
-            [hypertext-db.test.simple-node-parser :as simple-parser])
-  (:import (java.io File)))
+            [hypertext-db.test.simple-node-parser :as simple-parser]))
 
 ; ╔════════════════════════════════════════════════════════════════════════╗
 ; ║ Test data                                                              ║

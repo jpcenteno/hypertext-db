@@ -2,7 +2,6 @@
   (:require [clojure.test                    :refer [deftest is testing]]
             [hypertext-db.event-monitor      :as event-monitor]
             [hypertext-db.graph              :as graph]
-            [hypertext-db.helpers.vault      :as helpers.vault]
             [hypertext-db.helpers.vault-file :as helpers.vault-file]
             [hypertext-db.test.fixtures      :as fixtures]
             [hypertext-db.vault              :as vault]
