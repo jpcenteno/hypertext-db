@@ -19,7 +19,7 @@
 
 (s/fdef mkdirs
   :args (s/cat :vault ::vault/t :subdirectories ::subdirectories))
-(defn- mkdirs
+(defn mkdirs
   [vault & relative-paths]
   (doseq [x relative-paths]
     (.mkdirs (File. (::vault/dir vault) x))))
