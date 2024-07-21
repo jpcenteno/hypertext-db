@@ -43,15 +43,17 @@
 ; ╚════════════════════════════════════════════════════════════════════════╝
 
 (s/fdef handle-event
-  :args (s/cat :graph-atom (s.atom/atom* ::graph/t) :event ::hawk.specs/event))
+  :args (s/cat :graph-atom (s.atom/atom* ::graph/t) :event ::hawk.specs/event)
+  :ret  (s.atom/atom* ::graph/t))
 (defn- handle-event
   [graph-atom event]
   (let [event-kind (:kind event)
         full-path  (:file event)]
-    (case event-kind
-      :create (swap! graph-atom graph/upsert-node-from-full-path- full-path)
-      :modify (swap! graph-atom graph/upsert-node-from-full-path- full-path)
-      :delete (swap! graph-atom graph/remove-node-from-full-path- full-path))
+    (when (.isFile full-path)
+      (case event-kind
+        :create (swap! graph-atom graph/upsert-node-from-full-path- full-path)
+        :modify (swap! graph-atom graph/upsert-node-from-full-path- full-path)
+        :delete (swap! graph-atom graph/remove-node-from-full-path- full-path)))
     graph-atom))
 
 (s/fdef start
