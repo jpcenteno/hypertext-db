@@ -270,7 +270,7 @@
             vault-files)))
 
 (s/fdef upsert-node-from-full-path-
-  :args (s/and (s/cat :graph ::t :absolute-file vault/absolute-file?)
+  :args (s/and (s/cat :graph ::t :absolute-file (s/and vault/absolute-file? #(.isFile %)))
                #(vault/contains-absolute-file? (:graph %) (:absolute-file %)))
   :ret ::t)
 (defn upsert-node-from-full-path-
