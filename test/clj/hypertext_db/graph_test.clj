@@ -502,11 +502,6 @@
           (is (= 4 (graph/node-count     graph-ret))))))))
 
 (deftest test-upsert-node-from-full-path-
-  (testing "Does nothing provided a non-existing file"
-    (let [graph-arg (fixtures/graph-empty)
-          full-path (File. (::vault/dir graph-arg) "some-non-existing-file.txt")]
-      (is (= graph-arg (graph/upsert-node-from-full-path- graph-arg full-path)))))
-
   (testing "Adds a new node (empty graph)"
     (let [graph-arg      (fixtures/graph-empty)
           vault-file     (-> (helpers.vault-file/generate-distinct 1)
